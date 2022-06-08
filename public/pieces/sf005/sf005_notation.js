@@ -1,17 +1,15 @@
+//#ef NOTES
+/*
+IMPORT NOTATION SVG FROM LILYPOD
+SIDESHOW PANES
+Notation Pane and Sideshow Panes
+Refine notation
+Determine size of lilypond page to fit notation pane
+Measure distance between notes to assure proportionality
+*/
+//#endef NOTES
+
 //#ef GLOBAL VARIABLES
-
-//##ef General Variables
-let scoreData;
-const colorsInOrder = [clr_brightOrange, clr_brightBlue, clr_mustard, clr_brightGreen, clr_lavander, clr_brightRed, clr_limeGreen, clr_neonMagenta];
-//##endef General Variables
-
-//##ef URL Args
-let PIECE_ID = 'pieceId';
-let partsToRun = [];
-let TOTAL_NUM_PARTS_TO_RUN;
-let SCORE_DATA_FILE_TO_LOAD = "";
-let scoreControlsAreEnabled = true;
-//##endef URL Args
 
 //##ef Timing
 const FRAMERATE = 60;
@@ -32,22 +30,206 @@ let displayClock;
 //##endef Timing
 
 //##ef World Panel Variables
-let worldPanel, worldSvg;
+let worldPanel;
 const DEVICE_SCREEN_W = window.screen.width;
 const DEVICE_SCREEN_H = window.screen.height;
-const MAX_W = 633; //to fit phones
-const MAX_H = 240;
+const MAX_W = 800; //16:10 aspect ratio; 0.625
+const MAX_H = 500;
 const WORLD_W = Math.min(DEVICE_SCREEN_W, MAX_W);
 const WORLD_H = Math.min(DEVICE_SCREEN_H, MAX_H);
 const WORLD_CENTER = WORLD_W / 2;
 const WORLD_MARGIN = 4;
-const MAX_NUM_PORTALS = Math.round(WORLD_W / PX_PER_HALFSEC); //enough bricks to have 1 every 0.5 seconds for the length of the canvas
 const WORLD_W_FRAMES = WORLD_W / PX_PER_FRAME;
 //##endef World Panel Variables
 
 //##ef Canvas Variables
-let canvas;
+let canvasNotationDiv, canvasNotationSVG;
+let canvasSideShow01_div, canvasSideShow02_div, canvasSideShow03_div, canvasSideShow04_div;
+let canvasSideShow01_SVG, canvasSideShow02_SVG, canvasSideShow03_SVG, canvasSideShow04_SVG;
+const SIDESHOWCANVAS_H = (WORLD_H * 0.333) - 6;
+const SIDESHOWCANVAS_W = 196;
+const SIDESHOWCANVAS_TOP = 3;
+const NOTATIONCANVAS_TOP = WORLD_H * 0.333; // 800 x 333
+const NOTATIONCANVAS_H = WORLD_H * 0.667;
+const NOTATIONCANVAS_W = WORLD_W;
 //##endef Canvas Variables
+
+//##ef Staff Notation
+let staffNotationSVG;
+//##endef Staff Notation
+
+
+//#endef GLOBAL VARIABLES
+
+//#ef INIT
+function init() {
+
+  makeWorldPanel();
+  makeCanvas();
+  makeStaffNotation();
+
+} // function init() END
+//#endef INIT
+
+//#ef BUILD WORLD
+
+//##ef Make World Panel
+function makeWorldPanel() {
+  worldPanel = mkPanel({
+    w: WORLD_W,
+    h: WORLD_H,
+    title: 'SoundFlow #5',
+    onwindowresize: true,
+    clr: 'none'
+  });
+
+  worldPanel.content.addEventListener('click', function() {
+    document.documentElement.webkitRequestFullScreen({
+      navigationUI: 'hide'
+    });
+  });
+
+} // function makeWorldPanel() END
+//##endef Make World Panel
+
+//##ef Make Canvas
+function makeCanvas() {
+
+  //###ef Notation Canvas
+  canvasNotationDiv = mkDiv({
+    canvas: worldPanel.content,
+    w: NOTATIONCANVAS_W,
+    h: NOTATIONCANVAS_H,
+    top: NOTATIONCANVAS_TOP,
+    left: 0,
+    bgClr: 'white'
+  });
+
+  canvasNotationSVG = mkSVGcontainer({
+    canvas: canvasNotationDiv,
+    w: NOTATIONCANVAS_W,
+    h: NOTATIONCANVAS_H,
+    x: 0,
+    y: 0,
+    clr: 'white'
+  });
+  //###endef Notation Canvas
+
+  //###ef Sideshow Canvas 01
+  canvasSideShow01_div = mkDiv({
+    canvas: worldPanel.content,
+    w: SIDESHOWCANVAS_W,
+    h: SIDESHOWCANVAS_H,
+    top: SIDESHOWCANVAS_TOP,
+    left: 3,
+    bgClr: 'black'
+  });
+
+  canvasSideShow01_SVG = mkSVGcontainer({
+    canvas: canvasSideShow01_div,
+    w: SIDESHOWCANVAS_W,
+    h: SIDESHOWCANVAS_H,
+    x: 0,
+    y: 0,
+    clr: 'black'
+  });
+  //###endef Sideshow Canvas 01
+
+  //###ef Sideshow Canvas 02
+  canvasSideShow02_div = mkDiv({
+    canvas: worldPanel.content,
+    w: SIDESHOWCANVAS_W,
+    h: SIDESHOWCANVAS_H,
+    top: SIDESHOWCANVAS_TOP,
+    left: SIDESHOWCANVAS_W + 6,
+    bgClr: 'black'
+  });
+
+  canvasSideShow02_SVG = mkSVGcontainer({
+    canvas: canvasSideShow02_div,
+    w: SIDESHOWCANVAS_W,
+    h: SIDESHOWCANVAS_H,
+    x: 0,
+    y: 0,
+    clr: 'black'
+  });
+  //###endef Sideshow Canvas 02
+
+  //###ef Sideshow Canvas 03
+  canvasSideShow03_div = mkDiv({
+    canvas: worldPanel.content,
+    w: SIDESHOWCANVAS_W,
+    h: SIDESHOWCANVAS_H,
+    top: SIDESHOWCANVAS_TOP,
+    left: (SIDESHOWCANVAS_W * 2) + 9,
+    bgClr: 'black'
+  });
+
+  canvasSideShow03_SVG = mkSVGcontainer({
+    canvas: canvasSideShow03_div,
+    w: SIDESHOWCANVAS_W,
+    h: SIDESHOWCANVAS_H,
+    x: 0,
+    y: 0,
+    clr: 'black'
+  });
+  //###endef Sideshow Canvas 03
+
+  //###ef Sideshow Canvas 04
+  canvasSideShow04_div = mkDiv({
+    canvas: worldPanel.content,
+    w: SIDESHOWCANVAS_W,
+    h: SIDESHOWCANVAS_H,
+    top: SIDESHOWCANVAS_TOP,
+    left: (SIDESHOWCANVAS_W * 3) + 12,
+    bgClr: 'black'
+  });
+
+  canvasSideShow04_SVG = mkSVGcontainer({
+    canvas: canvasSideShow04_div,
+    w: SIDESHOWCANVAS_W,
+    h: SIDESHOWCANVAS_H,
+    x: 0,
+    y: 0,
+    clr: 'black'
+  });
+  //###endef Sideshow Canvas 04
+} // function makeCanvas() END
+//##endef Make Canvas
+
+//##ef Make Staff Notation
+function makeStaffNotation() {
+
+  let staffNotationSVG = document.createElementNS(SVG_NS, "image");
+  staffNotationSVG.setAttributeNS(XLINK_NS, 'xlink:href', '/pieces/sf005/notation/InteractiveLoopingLine001-1.svg');
+  staffNotationSVG.setAttributeNS(null, "y", 0);
+  staffNotationSVG.setAttributeNS(null, "x", 0);
+  staffNotationSVG.setAttributeNS(null, "visibility", 'visible');
+  staffNotationSVG.setAttributeNS(null, "display", 'yes');
+  canvasNotationSVG.appendChild(staffNotationSVG);
+
+} // makeStaffNotation() END
+//##endef Make Staff Notation
+
+//#endef BUILD WORLD
+
+
+/*
+
+//#ef GLOBAL VARIABLES
+
+//##ef General Variables
+let scoreData;
+const colorsInOrder = [clr_brightOrange, clr_brightBlue, clr_mustard, clr_brightGreen, clr_lavander, clr_brightRed, clr_limeGreen, clr_neonMagenta];
+//##endef General Variables
+
+//##ef URL Args
+let PIECE_ID = 'pieceId';
+let partsToRun = [];
+let TOTAL_NUM_PARTS_TO_RUN;
+let SCORE_DATA_FILE_TO_LOAD = "";
+let scoreControlsAreEnabled = true;
+//##endef URL Args
 
 //##ef Cursor Variables
 let cursorLine, cursorRectFront, cursorRectBack;
@@ -66,13 +248,11 @@ const PORTAL_MARGIN = 10;
 const PORTAL_GAP = PORTAL_MARGIN + PORTAL_H;
 //##endef Portal Variables
 
-
 //##ef Clock Variables
 const NUM_ARCS_PER_CLOCK = 60;
 const ARC_DEG_INC = 6;
 
 //##endef Clock Variables
-
 
 //#ef Animation Engine Variables
 let cumulativeChangeBtwnFrames_MS = 0;
@@ -97,7 +277,6 @@ const TS = timesync.create({
   interval: 1000
 });
 //#endef TIMESYNC
-
 
 //#endef GLOBAL VARIABLES
 
@@ -128,254 +307,6 @@ function generateScoreData() {
   //##ef GENERATE SCORE DATA - VARIABLES
   let scoreDataObject = {};
   //##endef GENERATE SCORE DATA - VARIABLES
-
-  //##ef Live Sampling
-  //Event GoTime & Durations
-  let tTimeInc = 0;
-  let gapMin = 5;
-  let gapMax = 9;
-  let lsDurMin = 4;
-  let lsDurMax = 6;
-  let gapBtwnSamplingGroupMin = 240;
-  let gapBtwnSamplingGroupMax = 420;
-  let lsPreviousDur = 0;
-  let liveSampPortal_ix = 0
-  for (let sampIx = 0; sampIx < numLiveSamps; sampIx++) {
-    let tObj = {};
-    let tGap = rrand(gapMin, gapMax);
-    tTimeInc += lsPreviousDur + tGap;
-    let tDur = rrand(lsDurMin, lsDurMax);
-    tObj['goTime'] = tTimeInc;
-    tObj['dur'] = tDur;
-    tObj['sampNum'] = sampIx;
-    tObj['portalIx'] = liveSampPortal_ix;
-    liveSampPortal_ix++;
-    tLsPortalObj = {};
-    tLsPortalObj['sampNum'] = sampIx;
-    tLsPortalObj['len'] = tDur * PX_PER_SEC;
-    liveSampPortals_data.push(tLsPortalObj);
-    lsPreviousDur = tDur;
-    liveSamp_timesDurs.push(tObj);
-  }
-  // RESULT: liveSamp_timesDurs {goTime:,dur:, sampNum:, portalIx:}
-  //Generate more live sampling events later on in the piece
-  tTimeInc = tTimeInc + rrand(gapBtwnSamplingGroupMin, gapBtwnSamplingGroupMax);
-  lsPreviousDur = 0;
-  for (let sampIx = 0; sampIx < numLiveSamps; sampIx++) {
-    let tObj = {};
-    let tDur = rrand(lsDurMin, lsDurMax);
-    tObj['goTime'] = tTimeInc;
-    tObj['dur'] = tDur;
-    tObj['sampNum'] = sampIx;
-    tObj['portalIx'] = liveSampPortal_ix;
-    liveSampPortal_ix++;
-    tLsPortalObj = {};
-    tLsPortalObj['sampNum'] = sampIx;
-    tLsPortalObj['len'] = tDur * PX_PER_SEC;
-    liveSampPortals_data.push(tLsPortalObj);
-    liveSamp_timesDurs.push(tObj);
-    let tGap = rrand(gapMin, gapMax);
-    tTimeInc += tGap + tDur;
-  }
-  tTimeInc = tTimeInc + rrand(gapBtwnSamplingGroupMin, gapBtwnSamplingGroupMax);
-  lsPreviousDur = 0;
-  for (let sampIx = 0; sampIx < numLiveSamps; sampIx++) {
-    let tObj = {};
-    let tDur = rrand(lsDurMin, lsDurMax);
-    tObj['goTime'] = tTimeInc;
-    tObj['dur'] = tDur;
-    tObj['sampNum'] = sampIx;
-    tObj['portalIx'] = liveSampPortal_ix;
-    liveSampPortal_ix++;
-    tLsPortalObj = {};
-    tLsPortalObj['sampNum'] = sampIx;
-    tLsPortalObj['len'] = tDur * PX_PER_SEC;
-    liveSampPortals_data.push(tLsPortalObj);
-    liveSamp_timesDurs.push(tObj);
-    let tGap = rrand(gapMin, gapMax);
-    tTimeInc += tGap + tDur;
-  }
-  // RESULT: liveSamp_timesDurs {goTime:, dur:, sampNum:, portalIx:}
-  // Calculate live sampling loop dur frames & make set of empty arrays
-  numLiveSampPortals = liveSampPortal_ix - 1;
-  let timeGapBeforeLooping = rrand(gapBtwnSamplingGroupMin, gapBtwnSamplingGroupMax); //gap before the loop restarts
-  let liveSampEvents_byFrame = [];
-  let liveSampEventsLeadIn_byFrame = [];
-  for (var i = 0; i < NUM_FRAMES_WORLD_R_TO_CURSOR; i++) liveSampEventsLeadIn_byFrame.push([]);
-  let liveSampingLoop_totalNumFrames = Math.ceil((liveSamp_timesDurs[liveSamp_timesDurs.length - 1].goTime + liveSamp_timesDurs[liveSamp_timesDurs.length - 1].dur + timeGapBeforeLooping) * FRAMERATE);
-  for (var i = 0; i < liveSampingLoop_totalNumFrames; i++) liveSampEvents_byFrame.push([]);
-  let liveSampEventsClock_byFrame = [];
-  for (var i = 0; i < liveSampingLoop_totalNumFrames; i++) liveSampEventsClock_byFrame.push(-1);
-  // RESULT: liveSampEvents_byFrame
-  // For each live samp event, calculate which frames it is on scene, and its go frame and stop frame and populate liveSampEvents_byFrame
-  liveSamp_timesDurs.forEach((timeDurObj) => { //{goTime:, dur:, sampNum:, portalIx:}
-
-    let goFrm = Math.round(timeDurObj.goTime * FRAMERATE);
-    let stopFrm = Math.round(goFrm + (timeDurObj.dur * FRAMERATE));
-    let firstFrameOn = goFrm - NUM_FRAMES_WORLD_R_TO_CURSOR;
-    let lastFrameOn = stopFrm + NUM_FRAMES_WORLD_CURSOR_TO_WORLD_L
-
-    for (var frmIx = Math.max(firstFrameOn, 0); frmIx < lastFrameOn; frmIx++) {
-
-      let tobj = {}; //{x:, goStop:, sampNum:, portalIx: }
-      tobj['sampNum'] = timeDurObj.sampNum;
-      tobj['x'] = WORLD_W - ((frmIx - firstFrameOn) * PX_PER_FRAME);
-      tobj['portalIx'] = timeDurObj.portalIx;
-      if (frmIx == goFrm) tobj['goStop'] = 1;
-      else if (frmIx == stopFrm) tobj['goStop'] = 0;
-      else tobj['goStop'] = -1;
-      liveSampEvents_byFrame[frmIx].push(tobj);
-
-    } //for (var frmIx = Math.max(firstFrameOn, 0); frmIx < lastFrameOn; frmIx++)
-
-    //CLOCK
-    let durFrms = stopFrm - goFrm;
-    let numDegEachFrame = 360 / durFrms;
-    for (var frmIx = goFrm; frmIx < stopFrm; frmIx++) {
-      let degThisFrame = (frmIx - goFrm) * numDegEachFrame;
-      liveSampEventsClock_byFrame[frmIx] = Math.round(degThisFrame); //Update later when you make liveSampArcs
-
-    }
-
-
-
-  }); //liveSamp_timesDurs.forEach((timeDurObj) => { //{goTime:,dur}
-  //RESULT: liveSampEvents_byFrame (DONE)
-
-  //LEAD-IN
-  let liveSampEventsOnSceneAtStartObj = liveSampEvents_byFrame[0];
-  let liveSamp_numLeadInFrames = NUM_FRAMES_WORLD_R_TO_CURSOR - ((liveSampEventsOnSceneAtStartObj[0].x - CURSOR_X) * PX_PER_FRAME)
-
-  for (var frmIx = 0; frmIx < liveSamp_numLeadInFrames; frmIx++) {
-
-    liveSampEventsOnSceneAtStartObj.forEach((evtObj) => {
-      let tobj = {};
-      let tx = evtObj.x + (PX_PER_FRAME * frmIx);
-      let tsampnum = evtObj.sampNum;
-      tobj['sampNum'] = tsampnum;
-      tobj['x'] = tx;
-      tobj['portalIx'] = evtObj.portalIx;
-      liveSampEventsLeadIn_byFrame[frmIx].push(tobj);
-
-    }); // liveSampEventsOnSceneAtStartObj.forEach((evtObj) =>
-  } // for (var frmIx = 0; frmIx < NUM_FRAMES_WORLD_R_TO_CURSOR; frmIx++)
-  //RESULT: liveSampEventsLeadIn_byFrame
-
-  scoreDataObject['liveSamplingPortals'] = liveSampEvents_byFrame;
-  scoreDataObject['liveSamplingPortals_leadIn'] = liveSampEventsLeadIn_byFrame;
-  scoreDataObject['liveSampEventsClock_byFrame'] = liveSampEventsClock_byFrame;
-  //##endef Live Sampling
-
-  //##ef Grain 01
-  //Time Containers
-  //Num Grain Clouds for the time container
-  //Dur of GrainCloud mostly short
-  //Attack of Cloud
-  //Crescendos and descrendos, backwards sounding, attacked
-
-  //Two Sets of palindrome time containers
-  const gc1_timeContainers1 = generatePalindromeTimeContainers({
-    numContainersOneWay: 4,
-    startCont_minMax: [50, 66],
-    pctChg_minMax: [0.11, 0.17]
-  });
-  const gc1_timeContainers2 = generatePalindromeTimeContainers({
-    numContainersOneWay: 4,
-    startCont_minMax: [100, 121],
-    pctChg_minMax: [0.21, 0.27]
-  });
-  const gc1_timeContainers = gc1_timeContainers1.concat(gc1_timeContainers2); //concat both sets
-  // RESULT: gc1_timeContainers
-
-  //Generate gotimes from time containers
-  const gc1_goTimes = [];
-  let gc1_goTime = 0;
-  for (var timeIx = 0; timeIx < gc1_timeContainers.length; timeIx++) {
-    gc1_goTime += gc1_timeContainers[timeIx]; //increment first so no event at 0
-    gc1_goTimes.push(gc1_goTime);
-  }
-  //RESULT: gc1_goTimes
-
-  //Generate Event Data {portalIx:, dur:, goFrm:, stopFrm:}
-  //gc1_eventData var initialization in Grain Cloud 01 Portals VARS
-  gc1_goTimes.forEach((goTime, evtIx) => {
-    let tobj = {};
-    tobj['portalIx'] = evtIx;
-    let tdur = rrand(3.3, 13);
-    tobj['dur'] = tdur;
-    let tgofrm = Math.round(goTime * FRAMERATE);
-    tobj['goFrm'] = tgofrm;
-    tobj['stopFrm'] = tgofrm + Math.round(tdur * FRAMERATE);
-    gc1_eventData.push(tobj);
-  });
-  //RESULT: gc1_eventData {portalIx:, dur:, goFrm:, stopFrm:}
-
-  //Calculate number of frames in event loop
-  const gc1_eventLoop_durFrames = gc1_eventData[gc1_eventData.length - 1].stopFrm + NUM_FRAMES_WORLD_CURSOR_TO_WORLD_L;
-  //RESULT: gc1_eventLoop_durFrames
-
-
-  //Populate Frame by frame array
-  let gc1_byFrame = []; //{x:, portalIx:, goStop:, clockArcNum:, durSec:}
-  for (var i = 0; i < gc1_eventLoop_durFrames; i++) gc1_byFrame.push({}); //populate with empty objects
-
-  for (var evIx = 0; evIx < gc1_eventData.length; evIx++) { //{goFrm:,stopFrm:, dur:, portalIx: }
-
-    let evObj = gc1_eventData[evIx];
-
-    let portalIx = evObj.portalIx;
-    let goFrm = evObj.goFrm;
-    let stopFrm = evObj.stopFrm;
-    let durFrms = stopFrm - goFrm;
-    let durSec = evObj.dur;
-    let firstFrameOn = goFrm - NUM_FRAMES_WORLD_R_TO_CURSOR;
-    let lastFrameOn = stopFrm + NUM_FRAMES_WORLD_CURSOR_TO_WORLD_L
-
-    for (var frmIx = Math.max(firstFrameOn, 0); frmIx < lastFrameOn; frmIx++) {
-
-      gc1_byFrame[frmIx]['portalIx'] = portalIx; //{x:, portalIx:, goStop:, clockArcNum:, durSec:}
-      gc1_byFrame[frmIx]['durSec'] = durSec;
-      gc1_byFrame[frmIx]['x'] = WORLD_W - ((frmIx - firstFrameOn) * PX_PER_FRAME);
-      if (frmIx == goFrm) gc1_byFrame[frmIx]['goStop'] = 1;
-      else if (frmIx == stopFrm) gc1_byFrame[frmIx]['goStop'] = 0;
-      else gc1_byFrame[frmIx]['goStop'] = -1;
-
-    } //for (var frmIx = Math.max(firstFrameOn, 0); frmIx < lastFrameOn; frmIx++)
-
-    //CLOCK
-    let numDegEachFrame = 360 / durFrms;
-    for (var frmIx = goFrm; frmIx < stopFrm; frmIx++) {
-      let degThisFrame = (frmIx - goFrm) * numDegEachFrame;
-      let tarcnum = Math.floor(degThisFrame / ARC_DEG_INC);
-      gc1_byFrame[frmIx]['clockArcNum'] = tarcnum; //Update later when you make gc1Arcs
-    }
-
-  } //  gc1_eventData.forEach((evObj, evIx) => { //{goFrm:,stopFrm:, dur:, portalIx: }
-  //RESULT: gc1_byFrame
-
-  //LEAD-IN
-  //Lead in set will be NUM_FRAMES_WORLD_R_TO_CURSOR long
-  let gc1_leadInFrames = [];
-  for (var frmIx = 0; frmIx < NUM_FRAMES_WORLD_R_TO_CURSOR; frmIx++) gc1_leadInFrames.push({});
-  //See if any event go frames are <= NUM_FRAMES_WORLD_R_TO_CURSOR
-  for (var frmIx = 0; frmIx < NUM_FRAMES_WORLD_R_TO_CURSOR; frmIx++) {
-    if (Object.keys(gc1_byFrame[frmIx]).length !== 0) { //not empty object
-
-      let evtObj = gc1_byFrame[frmIx];
-      let tobj = {};
-      let tx = evtObj.x + (PX_PER_FRAME * frmIx);
-      gc1_leadInFrames[frmIx]['x'] = tx;
-      gc1_leadInFrames[frmIx]['portalIx'] = evtObj.portalIx;
-
-    //  START HERE make leadin in uodate
-
-    }
-  } // for (var frmIx = 0; frmIx < NUM_FRAMES_WORLD_R_TO_CURSOR; frmIx++)
-  //RESULT: liveSampEventsLeadIn_byFrame
-
-  scoreDataObject['gc1'] = gc1_byFrame;
-
-  //##endef Grain 01
 
   return scoreDataObject;
 } // function generateScoreData()
@@ -457,536 +388,46 @@ function makeCursor() {
 } // function makeCursor() END
 //##endef Make Cursor
 
-//##ef Live Sampling Portals
+
+function makeStaffNotation() {
 
 
-//###ef Live Sampling Portals VARS
-let liveSamp_timesDurs = [];
-let liveSamplingPortals = [];
-let liveSamplingPortalTexts = [];
-let liveSampClockCirc;
-let liveSampClockArcs = [];
-let numLiveSamps = 3;
-let liveSampEvents = []; //{lenPx:,startFrame:,endFrame
-const liveSampPortal_gap = 10;
-let liveSampPortals_data = []; //{sampNum:, len:}
-//###endef Live Sampling Portals VARS
 
-//###ef Live Sampling Portals MAKE
-function makeLiveSampPortals() {
-  liveSampPortals_data.forEach((lspObj, lspIx) => {
+  //##ef Draw Initial Notation
+  // Make all motives and make display:none; Display All Quarters
+  //make an SVG for each motive at each beat
+  beatCoords.forEach((beatCoordsObj, beatIx) => { //each beat loop
 
-    let w = lspObj.len;
-    let tSampNumStr = lspObj.sampNum.toString();
+    let tx = beatCoordsObj.x;
+    let ty = beatCoordsObj.y;
 
-    //Portal & Text
-    let liveSampPortal = mkSvgRect({
-      svgContainer: canvas,
-      x: 0,
-      y: liveSampPortal_gap,
-      w: w,
-      h: PORTAL_H,
-      fill: colorsInOrder[0],
-      stroke: 'black',
-      strokeW: 0,
-      roundR: 0
-    });
-    liveSampPortal.setAttributeNS(null, 'display', 'none');
-    liveSamplingPortals.push(liveSampPortal);
-    //Portal Number Label
-    liveSampPortalText = mkSvgText({
-      svgContainer: canvas,
-      x: 3,
-      y: liveSampPortal_gap,
-      fill: 'black',
-      stroke: 'black',
-      strokeW: 0,
-      justifyH: 'start',
-      justifyV: 'hanging',
-      fontSz: PORTAL_H,
-      fontFamily: 'lato',
-      txt: tSampNumStr
-    });
-    liveSampPortalText.setAttributeNS(null, 'display', 'none');
-    liveSamplingPortalTexts.push(liveSampPortalText);
+    // motiveInfoSet = [{ // {path:, lbl:, num:, w:, h:, numPartials:}//used to be notationSvgPaths_labels
+    motiveInfoSet.forEach((motiveObj) => { //each motive loop
 
-  }); //liveSamp_timesDurs.forEach((lspObj) =>
-}
+      let tLabel = motiveObj.lbl;
+      let motiveNum = motiveObj.num;
+      let tDisp = motiveObj.num == 0 ? 'yes' : 'none'; //initial notation displayed
+      // let tDisp = motiveObj.num == 3 ? 'yes' : 'none'; //initial notation displayed
 
-function makeLiveSampPortals_clock() {
+      // Create HTML SVG image
+      let tSvgImage = document.createElementNS(SVG_NS, "image");
+      tSvgImage.setAttributeNS(XLINK_NS, 'xlink:href', '/pieces/sf004/notationSVGs/motives/' + tLabel + '.svg');
+      tSvgImage.setAttributeNS(null, "y", ty - motiveObj.h);
+      tSvgImage.setAttributeNS(null, "x", tx);
+      tSvgImage.setAttributeNS(null, "visibility", 'visible');
+      tSvgImage.setAttributeNS(null, "display", tDisp);
+      rhythmicNotationObj.svgCont.appendChild(tSvgImage);
 
-  liveSampClockCirc = mkSvgCircle({
-    svgContainer: canvas,
-    cx: CURSOR_BACK_CENTER_X,
-    cy: liveSampPortal_gap + (PORTAL_H / 2),
-    r: (CURSOR_RECT_W / 2) - 4,
-    fill: 'none',
-    stroke: clr_limeGreen,
-    strokeW: 2
-  });
-  for (var i = 0; i < NUM_ARCS_PER_CLOCK; i++) {
-    let endAngle = Math.min(ARC_DEG_INC + (ARC_DEG_INC * i), 359.9);
-    let tArc = mkSvgArc({
-      svgContainer: canvas,
-      x: CURSOR_BACK_CENTER_X,
-      y: liveSampPortal_gap + (PORTAL_H / 2),
-      radius: (CURSOR_RECT_W / 2) - 4,
-      startAngle: 0,
-      endAngle: endAngle,
-      fill: clr_limeGreen,
-      stroke: 'none',
-      strokeW: 0,
-      strokeCap: 'round'
-    })
-    tArc.setAttributeNS(null, 'display', 'none');
-    let tobj = {};
-    tobj['arc'] = tArc;
-    tobj['deg'] = endAngle;
-    liveSampClockArcs.push(tobj);
-  }
+      motivesByBeat[beatIx][motiveNum] = tSvgImage;
 
-} // function makeLiveSampPortals_clock()
+    }); //notationSvgPaths_labels.forEach((motiveObj)  END
 
-//###endef Live Sampling Portals MAKE
+  }); //beatCoords.forEach((beatCoordsObj) END
+  //##endef END Draw Initial Notation
 
-//###ef Live Sampling Portals WIPE
-function wipeLiveSampPortals() {
-  liveSamplingPortals.forEach((lsp, lspIx) => {
-    lsp.setAttributeNS(null, 'display', 'none');
-    liveSamplingPortalTexts[lspIx].setAttributeNS(null, 'display', 'none');
-  });
-  liveSampClockArcs.forEach((lsa, lsaIx) => {
-    lsa.arc.setAttributeNS(null, 'display', 'none');
-  });
-}
-//###endef Live Sampling Portals WIPE
-
-//###ef Live Sampling Portals UPDATE
-function updateLiveSamplingPortals() {
-  if (FRAMECOUNT >= 0) {
-
-    let setIx = FRAMECOUNT % scoreData.liveSamplingPortals.length;
-    scoreData.liveSamplingPortals[setIx].forEach((lspObj) => { //{goTime:, dur:, sampNum:, portalIx:}
-      let sampNum = lspObj.sampNum;
-      let lspIx = lspObj.portalIx;
-      liveSamplingPortals[lspIx].setAttributeNS(null, 'transform', "translate(" + lspObj.x.toString() + ",0)");
-      liveSamplingPortals[lspIx].setAttributeNS(null, 'display', "yes");
-      liveSamplingPortalTexts[lspIx].setAttributeNS(null, 'transform', "translate(" + lspObj.x.toString() + ",0)");
-      liveSamplingPortalTexts[lspIx].textContent = sampNum;
-      liveSamplingPortalTexts[lspIx].setAttributeNS(null, 'display', "yes");
-      // GO ACTION
-      if (lspObj.goStop == 1) {
-        startAudioInputCapture();
-      }
-      // STOP ACTION
-      else if (lspObj.goStop == 0) {
-        stopAudioInputCapture(sampNum);
-      }
-    }); //scoreData.liveSamplingPortals[setIx].forEach((lspObj, lspIx) =>
-
-    // CLOCK
-    if (scoreData.liveSampEventsClock_byFrame[setIx] != -1) {
-      let arcThisFrame = Math.floor(scoreData.liveSampEventsClock_byFrame[setIx] / 6);
-      liveSampClockArcs[arcThisFrame].arc.setAttributeNS(null, 'display', "yes");
-    }
-
-  } // if (FRAMECOUNT >= 0)
-
-  // LEAD IN
-  else if (FRAMECOUNT < 0) {
-    if (-FRAMECOUNT < scoreData.liveSamplingPortals_leadIn.length) { //FRAMECOUNT is negative; only start lead in set if FRAMECOUNT = the length of lead in tf set for this tempo
-
-      let setIx = -FRAMECOUNT; //count from FRAMECOUNT/thisTempo_tfSet.length and go backwards; ie the first index in set is the furtherest away
-
-      scoreData.liveSamplingPortals_leadIn[setIx].forEach((lspObj) => { //each tf location for this tempo
-        let sampNum = lspObj.sampNum;
-        let lspIx = lspObj.portalIx;
-        liveSamplingPortals[lspIx].setAttributeNS(null, 'transform', "translate(" + lspObj.x.toString() + ",0)");
-        liveSamplingPortals[lspIx].setAttributeNS(null, 'display', "yes");
-        liveSamplingPortalTexts[lspIx].setAttributeNS(null, 'transform', "translate(" + lspObj.x.toString() + ",0)");
-        liveSamplingPortalTexts[lspIx].textContent = sampNum;
-        liveSamplingPortalTexts[lspIx].setAttributeNS(null, 'display', "yes");
-      }); // liveSampEventsLeadIn_byFrame[setIx].forEach((lspObj,lspIx) =>
-
-    } // if (-FRAMECOUNT <= liveSampEventsLeadIn_byFrame.length)
-  } // else if (FRAMECOUNT < 0)  END
-
-}
-//###endef Live Sampling Portals UPDATE
-
-
-//##endef Live Sampling Portals
-
-//##ef Grain Cloud 01 Portals
-
-
-//###ef Grain Cloud 01 Portals VARS
-let gc1_eventData = []; //{goFrm:,stopFrm:, dur:, portalIx: } //populated in generate score
-let gc1_Portals = [];
-let gc1_clockCirc;
-let gc1_clockArcs = [];
-let gc1Events = []; //{lenPx:,startFrame:,endFrame}
-const gc1Portal_gap = 10;
-//###endef Grain Cloud 01 Portals VARS
-
-//###ef Grain Cloud 01 Portals MAKE
-//Using gc1_eventData, generated in generate score data, make portal for each event based on dur, push to
-function gc1_makePortals() {
-  gc1_eventData.forEach((evObj, evIx) => {
-
-    let w = evObj.dur * PX_PER_SEC;
-
-    let gc1_Portal = mkSvgRect({
-      svgContainer: canvas,
-      x: 0,
-      y: PORTAL_MARGIN + PORTAL_GAP,
-      w: w,
-      h: PORTAL_H,
-      fill: colorsInOrder[1],
-      stroke: 'black',
-      strokeW: 0,
-      roundR: 0
-    });
-    gc1_Portal.setAttributeNS(null, 'display', 'none');
-    gc1_Portals.push(gc1_Portal);
-
-  }); //gc1_eventData.forEach((evObj) =>
-} //function gc1_makePortals()
-//RESULT: gc1_Portals
-
-//Make an arc for every ARC_DEG_INC for clock animation
-function gc1_makePortals_clock() {
-
-  gc1_clockCirc = mkSvgCircle({
-    svgContainer: canvas,
-    cx: CURSOR_BACK_CENTER_X,
-    cy: PORTAL_MARGIN + PORTAL_GAP + PORTAL_HALF_H,
-    r: (CURSOR_RECT_W / 2) - 4,
-    fill: 'none',
-    stroke: colorsInOrder[1],
-    strokeW: 2
-  });
-  for (var i = 0; i < NUM_ARCS_PER_CLOCK; i++) {
-    let endAngle = Math.min(ARC_DEG_INC + (ARC_DEG_INC * i), 359.9);
-    let tArc = mkSvgArc({
-      svgContainer: canvas,
-      x: CURSOR_BACK_CENTER_X,
-      y: PORTAL_MARGIN + PORTAL_GAP + PORTAL_HALF_H,
-      radius: (CURSOR_RECT_W / 2) - 4,
-      startAngle: 0,
-      endAngle: endAngle,
-      fill: colorsInOrder[1],
-      stroke: 'none',
-      strokeW: 0,
-      strokeCap: 'round'
-    })
-    tArc.setAttributeNS(null, 'display', 'none');
-    let tobj = {};
-    tobj['arc'] = tArc;
-    tobj['deg'] = endAngle;
-    gc1_clockArcs.push(tobj);
-  }
-  //UPDATE   gc1_byFrame[frmIx]['clockArcNum']
-} // function gc1_makePortals_clock()
-//RESULT: gc1_clockArcs
-//###endef Grain Cloud 01 Portals MAKE
-
-//###ef Grain Cloud 01 Portals WIPE
-function wipeGc1Portals() {
-  gc1_Portals.forEach((portal, evIx) => {
-    portal.setAttributeNS(null, 'display', 'none');
-  });
-  gc1_clockArcs.forEach((tarc) => {
-    tarc.arc.setAttributeNS(null, 'display', 'none');
-  });
-}
-//###endef Grain Cloud 01 Portals WIPE
-
-//###ef Grain Cloud 01 Portals UPDATE
-function updateGc1Portals() {
-  if (FRAMECOUNT >= 0) {
-
-    let setIx = FRAMECOUNT % scoreData.gc1.length;
-    if (Object.keys(scoreData.gc1[setIx]).length !== 0) { //not empty object
-      let evObj = scoreData.gc1[setIx]; //{x:, portalIx:, goStop:, clockArcNum:, durSec:}
-      let evIx = evObj.portalIx;
-      gc1_Portals[evIx].setAttributeNS(null, 'transform', "translate(" + evObj.x.toString() + ",0)");
-      gc1_Portals[evIx].setAttributeNS(null, 'display', "yes");
-      // GO ACTION
-      if (evObj.goStop == 1) {
-        grainCloud001(evObj.durSec);
-      }
-      // STOP ACTION
-      else if (evObj.goStop == 0) {
-
-      }
-      // CLOCK
-      if ('clockArcNum' in evObj) gc1_clockArcs[evObj.clockArcNum].arc.setAttributeNS(null, 'display', "yes");
-
-    }
-  } // if (FRAMECOUNT >= 0)
-
-  // LEAD IN
-  else if (FRAMECOUNT < 0) {
-    // if (-FRAMECOUNT < scoreData.gc1Portals_leadIn.length) { //FRAMECOUNT is negative; only start lead in set if FRAMECOUNT = the length of lead in tf set for this tempo
-    //
-    //   let setIx = -FRAMECOUNT; //count from FRAMECOUNT/thisTempo_tfSet.length and go backwards; ie the first index in set is the furtherest away
-    //
-    //   scoreData.gc1Portals_leadIn[setIx].forEach((evObj) => { //each tf location for this tempo
-    //     let sampNum = evObj.sampNum;
-    //     let evIx = evObj.portalIx;
-    //     gc1_Portals[evIx].setAttributeNS(null, 'transform', "translate(" + evObj.x.toString() + ",0)");
-    //     gc1_Portals[evIx].setAttributeNS(null, 'display', "yes");
-    //     gc1PortalTexts[evIx].setAttributeNS(null, 'transform', "translate(" + evObj.x.toString() + ",0)");
-    //     gc1PortalTexts[evIx].textContent = sampNum;
-    //     gc1PortalTexts[evIx].setAttributeNS(null, 'display', "yes");
-    //   }); // gc1EventsLeadIn_byFrame[setIx].forEach((evObj,evIx) =>
-    //
-    // } // if (-FRAMECOUNT <= gc1EventsLeadIn_byFrame.length)
-  } // else if (FRAMECOUNT < 0)  END
-
-}
-//###endef Grain Cloud 01 Portals UPDATE
-
-
-//##endef Grain Cloud 01 Portals
+} // makeStaffNotation() END
 
 //#endef BUILD WORLD
-
-//#ef AUDIO
-
-//##ef Audio Variables
-let audioCtx, DAC;
-let samplePaths = ["/audio/sax.wav"];
-let samples_asBuffers = [];
-let audioHasStarted = false;
-let audioInputSelect;
-let inputStream;
-let audioBuffer = [];
-let audioBufferSize = 0;
-let bufferLength = 1024;
-let isRecording = false;
-let currAudioCaptureObj = {};
-let liveSampBuffers = Array.apply(null, Array(numLiveSamps)).map(function() {});
-//##endef Audio Variables
-
-//##ef Initialize Audio
-function initAudio() {
-  if (!audioHasStarted) {
-    audioCtx = new AudioContext({
-      latencyHint: 'interactive',
-      sampleRate: 44100,
-    });
-    DAC = audioCtx.destination;
-
-    samplePaths.forEach((path) => { //Create & fill a buffer for each sample in samplePaths
-      const request = new XMLHttpRequest();
-      request.open("GET", path, true);
-      request.responseType = "arraybuffer";
-      request.onload = () => audioCtx.decodeAudioData(request.response, (data) => samples_asBuffers.push(data));
-      request.send();
-    }); // samplePaths.forEach((path)
-
-    startAudioCapture();
-
-    audioHasStarted = true;
-
-  } //  if(!audioHasStarted
-} // function initAudio()
-//##endef Initialize Audio
-
-//##ef startAudioCapture
-function startAudioCapture() {
-
-  const audioInputSelect = scoreCtrlPanel.audioInputSelect;
-  const selectors = [audioInputSelect];
-
-  navigator.mediaDevices.enumerateDevices()
-    .then(getAudioInputDevices)
-    .then(beginAudioStreamFromInputDevice)
-    .catch(handleError);
-
-  function getAudioInputDevices(inputDevicesInfo) {
-
-    // Handles being called several times to update labels. Preserve values.
-    const values = selectors.map(select => select.value);
-
-    selectors.forEach(select => {
-      while (select.firstChild) {
-        select.removeChild(select.firstChild);
-      }
-    }); //selectors.forEach(select =>
-
-    for (let i = 0; i !== inputDevicesInfo.length; ++i) {
-      const deviceInfo = inputDevicesInfo[i];
-      const option = document.createElement('option');
-      option.value = deviceInfo.deviceId;
-      if (deviceInfo.kind === 'audioinput') {
-        option.text = deviceInfo.label || `microphone ${audioInputSelect.length + 1}`;
-        audioInputSelect.appendChild(option);
-      }
-    } //for (let i = 0; i !== inputDevicesInfo.length; ++i)
-
-    selectors.forEach((select, selectorIndex) => {
-      if (Array.prototype.slice.call(select.childNodes).some(n => n.value === values[selectorIndex])) {
-        select.value = values[selectorIndex];
-      }
-    }); // selectors.forEach((select, selectorIndex)
-
-  } // function getAudioInputDevices(inputDevicesInfo)
-
-  audioInputSelect.onchange = beginAudioStreamFromInputDevice;
-
-  function beginAudioStreamFromInputDevice() {
-
-    if (window.stream) stream.getAudioTracks()[0].stop(); // Second call to getUserMedia() with changed device may cause error, so we need to release stream before changing device
-
-    const audioSource = audioInputSelect.value;
-
-    const constraints = {
-      audio: {
-        deviceId: audioSource ? {
-          exact: audioSource
-        } : undefined
-      }
-    }; //const constraints
-
-    navigator.mediaDevices.getUserMedia(constraints).then(manageStream).catch(handleError);
-
-  } //function beginAudioStreamFromInputDevice()
-
-  function manageStream(stream) {
-    window.stream = stream; // make stream available to console
-    inputStream = stream;
-  }
-
-  function handleError(error) {
-    console.log('navigator.MediaDevices.getUserMedia error: ', error.message, error.name);
-  }
-
-} // startAudioCapture
-//##endef startAudioCapture
-
-//##ef Live Sampling
-function startAudioInputCapture() {
-
-  if (isRecording) return;
-  isRecording = true;
-
-  const source = audioCtx.createMediaStreamSource(inputStream);
-  const processor = audioCtx.createScriptProcessor(bufferLength, 1, 1);
-  currAudioCaptureObj['processor'] = processor;
-  currAudioCaptureObj['source'] = source;
-
-  source.connect(processor);
-  processor.connect(DAC);
-
-  processor.onaudioprocess = function(audioProcessingEvent) {
-    if (isRecording) {
-
-      const realtimeBuffer = new Float32Array(bufferLength);
-      audioProcessingEvent.inputBuffer.copyFromChannel(realtimeBuffer, 0);
-
-      // Create an array of buffer array until the user finishes recording
-      audioBuffer.push(realtimeBuffer);
-      audioBufferSize += bufferLength;
-    }
-  };
-
-} // function startAudioInputCapture()
-
-function stopAudioInputCapture(bufNum) {
-  if (!isRecording) return;
-  isRecording = false;
-
-  let mergedBuffer = mergeBuffers(audioBuffer, audioBufferSize);
-  let arrayBuffer = audioCtx.createBuffer(1, mergedBuffer.length, 44100);
-  let buffer = arrayBuffer.getChannelData(0);
-
-  for (let i = 0, len = mergedBuffer.length; i < len; i++) {
-    buffer[i] = mergedBuffer[i];
-  }
-
-  liveSampBuffers[bufNum] = arrayBuffer;
-
-  audioBuffer = [];
-  audioBufferSize = 0;
-  currAudioCaptureObj.source.disconnect(currAudioCaptureObj.processor);
-  currAudioCaptureObj.processor.disconnect(DAC);
-
-  function mergeBuffers(bufferArray, bufferSize) {
-    if (bufferSize < 2) return; // Not merging buffers because there is less than 2 buffers from onaudioprocess event and hence no need to merge
-    let result = new Float32Array(bufferSize);
-    for (let i = 0, len = bufferArray.length, offset = 0; i < len; i++) {
-      result.set(bufferArray[i], offset);
-      offset += bufferArray[i].length;
-    }
-    return result;
-  } //function mergeBuffers(bufferArray, bufferSize)
-
-} // function stopAudioInputCapture()
-
-function playAudioBuffer(bufNum) {
-  let bufferSource = audioCtx.createBufferSource();
-  bufferSource.connect(DAC);
-  bufferSource.buffer = liveSampBuffers[bufNum];
-  bufferSource.start(audioCtx.currentTime)
-}
-
-
-//##endef Live Sampling
-
-//##ef Granular Synthesis
-const playGrain = (grainStartTime_MS, grainDur_MS, bufNum, grEnvName) => {
-
-  let grainStartTime_SEC = grainStartTime_MS / 1000;
-  let grainDur_SEC = grainDur_MS / 1000;
-  let grEnvArray = grainEnvelopes[grEnvName].arr;
-  let t_sampBuf = samples_asBuffers[bufNum];
-
-  // Create a node to play from a buffer.
-  const grain = audioCtx.createBufferSource();
-  grain.buffer = t_sampBuf;
-
-  // Create a node to control the buffer's gain.
-  const grainGain = audioCtx.createGain();
-  const panNode = audioCtx.createStereoPanner();
-  grainGain.connect(panNode);
-  panNode.connect(DAC);
-  panNode.pan.value = rrand(-1, 1);
-  // Create a window.
-  grainGain.gain.setValueAtTime(0, audioCtx.currentTime + grainStartTime_SEC);
-  grainGain.gain.setValueCurveAtTime(grEnvArray, audioCtx.currentTime + grainStartTime_SEC, grainDur_SEC);
-  grain.connect(grainGain);
-
-  // Choose a random place to start.
-  const offset = Math.random() * (samples_asBuffers[0].duration - grainDur_SEC)
-
-  // Play the grain.
-  grain.start(audioCtx.currentTime + grainStartTime_SEC, offset, grainDur_SEC);
-};
-
-function grainCloud001(durSec) {
-  let durMS = durSec * 1000;
-  let drumTimings_startIx = rrandInt(0, drumTimings_MS.length);
-  let tStartTime = 0;
-  let tIx = 0
-  while (durMS >= tStartTime) {
-    let tgrdur = choose([18, 18, 18, 19, 20, 21, 21, 22, 23, 23, 19, 24, 24, 24, 25, 25, 25, 25, 18, 18, 19, 19, 19, 20, 20, 21, 21, 22, 23, 23, 23, 42, 39, 50, 85, 72]);
-    let dtIx = (drumTimings_startIx + tIx) % (drumTimings_MS.length - 1);
-    if (dtIx >= drumTimings_startIx) {
-      tStartTime = drumTimings_MS[dtIx] - drumTimings_MS[drumTimings_startIx];
-    } else {
-      tStartTime = drumTimings_MS[dtIx] + drumTimings_MS[drumTimings_MS.length - 1] - drumTimings_MS[drumTimings_startIx];
-    }
-    let tGrEnv = choose(['expodec', 'expodec', 'expodec', 'expodec', 'gauss', 'expodec', 'expodec', 'expodec', 'expodec', 'expodec', 'expodec', 'expodec', 'expodec', 'rexpodec', 'blackmanHarris', 'pulse', 'pulse', 'tri']);
-    playGrain(tStartTime, tgrdur, 0, tGrEnv);
-    tIx++;
-  }
-}
-//##endef Granular Synthesis
-
-//#endef AUDIO
 
 //#ef CONTROL PANEL
 
@@ -1631,6 +1072,8 @@ function calcDisplayClock(pieceTimeMS) {
 }
 //#endef CLOCK
 
+
+*/
 
 
 

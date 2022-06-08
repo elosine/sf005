@@ -20,7 +20,7 @@ app.get('/', function(req, res) {
   res.sendFile(path.join(__dirname, '/public/pieces/sf005/sf005.html'));
 });
 //#endef END SERVER STATIC FILES
-
+/*
 //#ef TIMESYNC SERVER
 app.use('/timesync', timesyncServer.requestHandler);
 //#endef END TIMESYNC SERVER
@@ -277,3 +277,4 @@ io.on('connection', function(socket) {
 
 }); // End Socket IO
 //#endef >> END SOCKET IO
+*/

@@ -23,726 +23,6 @@ let clr_yellow = 'rgba(254,213,0,255)';
 let clr_neonMagenta = "rgb(255, 21, 160)";
 // #endef END Colors
 
-//#ef Make Panel
-
-//##ef makePanelContentDiv
-//Make a div to use in jspanel
-let makePanelContentDiv = function({
-  w = 200,
-  h = 200,
-  top = 0,
-  left = 0,
-  clr = 'black'
-} = {
-  w: 200,
-  h: 200,
-  clr: 'black',
-  top: 0,
-  left: 0
-}) {
-  let t_div = document.createElement("div");
-  t_div.style.width = w.toString() + "px";
-  t_div.style.height = h.toString() + "px";
-  t_div.style.backgroundColor = clr;
-  t_div.style.position = 'absolute';
-  t_div.style.top = top.toString() + 'px';
-  t_div.style.left = left.toString() + 'px';
-  t_div.style.borderWidth = '0px';
-  t_div.style.padding = '0px';
-  t_div.style.margin = '0px';
-  return t_div;
-}
-//##endef makePanelContentDiv
-
-let mkPanel = function({
-  canvasType = 0,
-  w = 200,
-  h = 200,
-  title = 'panel',
-  ipos = 'center-top',
-  offsetX = '0px',
-  offsetY = '0px',
-  autopos = 'none',
-  headerSize = 'xs',
-  onwindowresize = false,
-  contentOverflow = 'hidden',
-  clr = 'black',
-  onsmallified = function() {},
-  onunsmallified = function() {},
-  canresize = false,
-  header = 'auto-show-hide'
-} = {
-  canvasType: 0, // 0=div;1=svg
-  w: 200,
-  h: 200,
-  title: 'panel',
-  ipos: 'center-top',
-  offsetX: '0px',
-  offsetY: '0px',
-  autopos: 'none',
-  headerSize: 'xs',
-  onwindowresize: false,
-  contentOverflow: 'hidden',
-  clr: 'black',
-  onsmallified: function() {},
-  onunsmallified: function() {},
-  canresize: false,
-  header: 'auto-show-hide' //false
-}) {
-
-  let panelForReturn;
-  let canvas = makePanelContentDiv({
-    w: w,
-    h: h,
-    clr: clr
-  });
-
-  jsPanel.create({
-    position: {
-      my: ipos, //string from jspanel eg 'center-top'
-      at: ipos,
-      offsetX: offsetX,
-      offsetY: offsetY,
-      autoposition: autopos
-    },
-    contentSize: w.toString() + " " + h.toString(),
-    header: header,
-    headerControls: {
-      size: headerSize,
-      minimize: 'remove',
-      maximize: 'remove',
-      close: 'remove'
-    },
-    contentOverflow: contentOverflow,
-    headerTitle: title,
-    theme: "light",
-    content: canvas, //svg canvas lives here
-    resizeit: {
-      aspectRatio: 'content',
-      resize: function(panel, paneldata, e) {}
-    },
-    onwindowresize: onwindowresize,
-    onsmallified: onsmallified,
-    onunsmallified: onunsmallified,
-    resizeit: {
-      disable: !canresize
-    },
-    callback: function() {
-      panelForReturn = this;
-    }
-  });
-  return panelForReturn;
-} //jsPanel.create
-
-//#endef mkPanel
-
-// #ef mkSVGcontainer
-// mkSVGcontainer( {canvas,w: 200,h: 200,x: 50,y: 50, clr: 'black'});
-let mkSVGcontainer = function({
-  canvas,
-  w = 200,
-  h = 200,
-  x = 50,
-  y = 50,
-  clr = 'black'
-} = {
-  canvas,
-  w: 200,
-  h: 200,
-  x: 50,
-  y: 50,
-  clr: 'black'
-}) {
-  let tSvgCont = document.createElementNS(SVG_NS, "svg");
-  tSvgCont.setAttributeNS(null, "width", w);
-  tSvgCont.setAttributeNS(null, "height", h);
-  tSvgCont.setAttributeNS(null, "x", x);
-  tSvgCont.setAttributeNS(null, "y", y);
-  tSvgCont.style.backgroundColor = clr;
-  canvas.appendChild(tSvgCont);
-  return tSvgCont;
-}
-// #endef END mkSVGcontainer
-
-// #ef mkSvgRect
-// mkSvgRect({ svgContainer, x: 25, y: 25, w: 10, h: 10, fill: 'green', stroke: 'yellow', strokeW: 0, roundR: 0 });
-let mkSvgRect = function({
-  svgContainer,
-  x = 25,
-  y = 25,
-  w = 10,
-  h = 10,
-  fill = 'green',
-  stroke = 'yellow',
-  strokeW = 0,
-  roundR = 0
-} = {
-  svgContainer,
-  x: 25,
-  y: 25,
-  w: 10,
-  h: 10,
-  fill: 'green',
-  stroke: 'yellow',
-  strokeW: 0,
-  roundR: 0
-}) {
-
-  let svgRect = document.createElementNS(SVG_NS, "rect");
-  svgRect.setAttributeNS(null, "x", x);
-  svgRect.setAttributeNS(null, "y", y);
-  svgRect.setAttributeNS(null, "width", w);
-  svgRect.setAttributeNS(null, "height", h);
-  svgRect.setAttributeNS(null, "fill", fill);
-  svgRect.setAttributeNS(null, "stroke", stroke);
-  svgRect.setAttributeNS(null, "stroke-width", strokeW);
-  svgRect.setAttributeNS(null, "rx", roundR);
-  svgContainer.appendChild(svgRect);
-  return svgRect;
-}
-
-// #endef END mkSvgRect
-
-// #ef mkSvgCircle
-// mkSvgCircle({ svgContainer,  cx: 25,  cy: 25,  r: 10,  fill: 'green',  stroke: 'yellow',  strokeW: 3})
-let mkSvgCircle = function({
-  svgContainer,
-  cx = 25,
-  cy = 25,
-  r = 10,
-  fill = 'green',
-  stroke = 'yellow',
-  strokeW = 3
-} = {
-  svgContainer,
-  cx: 25,
-  cy: 25,
-  r: 10,
-  fill: 'green',
-  stroke: 'yellow',
-  strokeW: 3
-}) {
-
-  var bbCircle = document.createElementNS(SVG_NS, "circle");
-  bbCircle.setAttributeNS(null, "cx", cx);
-  bbCircle.setAttributeNS(null, "cy", cy);
-  bbCircle.setAttributeNS(null, "r", r);
-  bbCircle.setAttributeNS(null, "fill", fill);
-  bbCircle.setAttributeNS(null, "stroke", stroke);
-  bbCircle.setAttributeNS(null, "stroke-width", strokeW);
-  svgContainer.appendChild(bbCircle);
-  return bbCircle;
-}
-
-// #endef END mkSvgCircle
-
-// #ef mkDiv
-//  mkDiv({canvas, w: 50, h: 20, top: 0, left: 0 ,bgClr: clr_limeGreen});
-let mkDiv = function({
-  canvas,
-  w = 50,
-  h = 20,
-  top = 0,
-  left = 0,
-  bgClr = clr_limeGreen
-} = {
-  canvas,
-  w: 50,
-  h: 20,
-  top: 0,
-  left: 0,
-  bgClr: clr_limeGreen
-}) {
-  let tDiv = document.createElement("div");
-  tDiv.style.position = 'absolute';
-  tDiv.style.width = w.toString() + "px";
-  tDiv.style.height = h.toString() + "px";
-  tDiv.style.top = top.toString() + 'px';
-  tDiv.style.left = left.toString() + 'px';
-  tDiv.style.backgroundColor = bgClr;
-  tDiv.style.borderWidth = '0px';
-  tDiv.style.padding = '0px';
-  tDiv.style.margin = '0px';
-  canvas.appendChild(tDiv);
-  return tDiv;
-}
-// #endef END mkDiv
-
-// #ef mkSvgLine
-// mkSvgLine({ svgContainer, x1: 25, y1: 25, x2: 25, y2: 25, stroke: 'yellow', strokeW: 3 });
-let mkSvgLine = function({
-  svgContainer,
-  x1 = 25,
-  y1 = 25,
-  x2 = 25,
-  y2 = 25,
-  stroke = 'yellow',
-  strokeW = 3
-} = {
-  svgContainer,
-  x1: 25,
-  y1: 25,
-  x2: 25,
-  y2: 25,
-  stroke: 'yellow',
-  strokeW: 3
-}) {
-
-  var svgLine = document.createElementNS(SVG_NS, "line");
-  svgLine.setAttributeNS(null, "x1", x1);
-  svgLine.setAttributeNS(null, "y1", y1);
-  svgLine.setAttributeNS(null, "x2", x2);
-  svgLine.setAttributeNS(null, "y2", y2);
-  svgLine.setAttributeNS(null, "stroke", stroke);
-  svgLine.setAttributeNS(null, "stroke-width", strokeW);
-  svgContainer.appendChild(svgLine);
-
-  return svgLine;
-}
-
-// #endef END mkSvgLine
-
-// #ef mkButton
-function mkButton({
-  canvas,
-  w = 50,
-  h = 50,
-  top = 15,
-  left = 15,
-  label = 'Press Me Hard',
-  fontSize = 13,
-  action = {}
-} = {
-  canvas,
-  w: 50,
-  h: 50,
-  top: 15,
-  left: 15,
-  label: 'Press Me Hard',
-  fontSize: 13,
-  action: {}
-}) {
-  let btn = document.createElement("BUTTON");
-  btn.className = 'btn btn-1';
-  btn.innerText = label;
-  btn.style.width = w.toString() + "px";
-  btn.style.height = h.toString() + "px";
-  btn.style.top = top.toString() + "px";
-  btn.style.left = left.toString() + "px";
-  btn.style.fontSize = fontSize.toString() + "px";
-  btn.addEventListener("click", action);
-  canvas.appendChild(btn);
-  return btn;
-}
-// #endefEND mkButton
-
-// #ef retrieveFileFromPath
-// USAGE: let data = await retrieveFileFromPath(path)
-// Every line after await will execute after file is retrived or the Promise is resolved
-// Text will be available as data.fileData
-function  retrieveFileFromPath(path) {
-  return new Promise((resolve, reject) => {
-    let request = new XMLHttpRequest();
-    request.open('GET', path, true);
-    request.responseType = 'text';
-    request.onload = () => resolve({
-      fileData: request.response
-    });
-    request.onerror = reject;
-    request.send();
-  })
-}
-// #endef END retrieveFileFromPath
-
-// #ef rrand
-function rrand(min, max) {
-  return Math.random() * (max - min) + min;
-}
-// #endef END rrand
-
-// #ef rrandInt
-let rrandInt = function(min, max) {
-  return Math.round(Math.random() * (max - min) + min);
-}
-// #endef END rrandInt
-
-// #ef choose
-
-let choose = function(choicesArr) {
-  let t_theThingToReturn;
-  if (choicesArr.length != 0) {
-    let randpick = rrandInt(0, choicesArr.length - 1);
-    t_theThingToReturn = choicesArr[randpick];
-  }
-
-  return t_theThingToReturn;
-
-}
-
-// #endef END choose
-
-//#ef mkInputField
-function mkInputField({
-  canvas,
-  id = 'inputField',
-  w = 50,
-  h = 20,
-  top = 0,
-  left = 0,
-  color = 'black',
-  fontSize = 11,
-  clickAction = function() {},
-  keyUpAction = function() {}
-} = {
-  canvas,
-  id: 'inputField',
-  w: 50,
-  h: 20,
-  top: 0,
-  left: 0,
-  color: 'black',
-  fontSize: 11,
-  clickAction: function() {},
-  keyUpAction: function() {}
-}) {
-  let inputField = document.createElement("input");
-  inputField.type = 'text';
-  inputField.className = 'input__field--yoshiko';
-  inputField.id = id;
-  inputField.style.width = w.toString() + "px";
-  inputField.style.height = h.toString() + "px";
-  inputField.style.top = top.toString() + "px";
-  inputField.style.left = left.toString() + "px";
-  inputField.style.fontSize = fontSize.toString() + "px";
-  inputField.style.color = color;
-  inputField.addEventListener("click", clickAction);
-  inputField.addEventListener("keyup", keyUpAction);
-  canvas.appendChild(inputField);
-  return inputField;
-}
-// #endef END mkInputField
-
-// #ef mkSpan
-
-let mkSpan = function({
-  canvas,
-  top = 0,
-  left = 0,
-  text = 'welcome to the thunderdome',
-  fontSize = 14,
-  color = 'green',
-  bgClr = 'black'
-} = {
-  canvas,
-  top: 0,
-  left: 0,
-  text: 'welcome to the thunderdome',
-  fontSize: 14,
-  color: 'green',
-  bgClr: 'black'
-}) {
-  let lbl = document.createElement("span");
-  lbl.innerHTML = text;
-  lbl.style.fontSize = fontSize.toString() + "px";
-  lbl.style.color = color;
-  lbl.style.fontFamily = "Lato";
-  lbl.style.position = 'absolute';
-  lbl.style.top = top.toString() + 'px';
-  lbl.style.left = left.toString() + 'px';
-  lbl.style.backgroundColor = bgClr;
-  lbl.style.padding = '0px';
-  lbl.style.margin = '0px';
-  lbl.style.borderWidth = '0px';
-  canvas.appendChild(lbl);
-  return lbl;
-}
-// #endef END mkSpan
-
-//#ef pad
-let pad = function(num, size) {
-  let s = "000000000" + num;
-  return s.substr(s.length - size);
-}
-//#endef pad
-
-// #ef mkSvgText
-// mkSvgText({ svgContainer,  x: 25,  y: 25,  fill: 'black',  stroke: 'white',  strokeW: 0,  justifyH: 'start',  justifyV: 'auto',  fontSz: 18,  fontFamily: 'lato',  txt: '007'});
-let mkSvgText = function({
-  svgContainer,
-  x = 0,
-  y = 0,
-  fill = 'black',
-  stroke = 'white',
-  strokeW = 0,
-  justifyH = 'start',
-  justifyV = 'auto',
-  fontSz = 18,
-  fontFamily = 'lato',
-  txt = '007'
-} = {
-  svgContainer,
-  x: 25,
-  y: 25,
-  fill: 'black',
-  stroke: 'white',
-  strokeW: 0,
-  justifyH: 'start',
-  justifyV: 'auto',
-  fontSz: 18,
-  fontFamily: 'lato',
-  txt: '007'
-}) {
-
-  let svgText = document.createElementNS(SVG_NS, "text");
-  svgText.setAttributeNS(null, "x", x);
-  svgText.setAttributeNS(null, "y", y);
-  svgText.setAttributeNS(null, "fill", fill);
-  svgText.setAttributeNS(null, "stroke", stroke);
-  svgText.setAttributeNS(null, "stroke-width", strokeW);
-  svgText.setAttributeNS(null, "text-anchor", justifyH); //start;middle;end
-  svgText.setAttributeNS(null, "font-size", fontSz);
-  svgText.setAttributeNS(null, "font-family", strokeW);
-  // auto | baseline | before-edge | text-before-edge | middle | central | after-edge | text-after-edge | ideographic | alphabetic | hanging | mathematical | inherit
-  svgText.setAttributeNS(null, "alignment-baseline", justifyV);
-  svgText.textContent = txt;
-  svgContainer.appendChild(svgText);
-  return svgText;
-}
-// #endef END mkSvgText
-
-// #ef rads
-function rads(deg) {
-  return (deg * Math.PI) / 180;
-}
-// #endef END rads
-
-// #ef describeArc
-
-let polarToCartesian = function(centerX, centerY, radius, angleInDegrees) {
-  let angleInRadians = (angleInDegrees - 90) * Math.PI / 180.0;
-  return {
-    x: centerX + (radius * Math.cos(angleInRadians)),
-    y: centerY + (radius * Math.sin(angleInRadians))
-  };
-}
-
-function describeArc(x, y, radius, startAngle, endAngle) {
-  let start = polarToCartesian(x, y, radius, endAngle);
-  let end = polarToCartesian(x, y, radius, startAngle);
-  let arcSweep = endAngle - startAngle <= 180 ? "0" : "1";
-  let d = [
-    "M", start.x, start.y,
-    "A", radius, radius, 0, arcSweep, 0, end.x, end.y,
-    "L", x, y,
-    "L", start.x, start.y
-  ].join(" ");
-  return d;
-}
-
-// #endef END describeArc
-
-// #ef mkSvgArc
-// mkSvgArc({svgContainer,  x: 0,  y: 0,  radius: 10,  startAngle: 45,  endAngle: 180,  fill: 'green',  stroke: 'yellow',  strokeW: 3,  strokeCap: 'round'})
-let mkSvgArc = function({
-  svgContainer,
-  x = 0,
-  y = 0,
-  radius = 10,
-  startAngle = 45,
-  endAngle = 180,
-  fill = 'green',
-  stroke = 'yellow',
-  strokeW = 3,
-  strokeCap = 'round' //square;round;butt
-} = {
-  svgContainer,
-  x: 0,
-  y: 0,
-  radius: 10,
-  startAngle: 45,
-  endAngle: 180,
-  fill: 'green',
-  stroke: 'yellow',
-  strokeW: 3,
-  strokeCap: 'round' //square;round;butt
-}) {
-
-  let start = polarToCartesian(x, y, radius, endAngle);
-  let end = polarToCartesian(x, y, radius, startAngle);
-  let arcSweep = endAngle - startAngle <= 180 ? "0" : "1";
-  let d = [
-    "M", start.x, start.y,
-    "A", radius, radius, 0, arcSweep, 0, end.x, end.y,
-    "L", x, y,
-    "L", start.x, start.y
-  ].join(" ");
-
-  // << << ARCS PROPER -------------------- >
-  let arc = document.createElementNS(SVG_NS, "path");
-  arc.setAttributeNS(null, "d", d); //describeArc makes 12'0clock =0degrees
-  arc.setAttributeNS(null, "stroke-width", strokeW);
-  arc.setAttributeNS(null, "stroke", stroke);
-  arc.setAttributeNS(null, "fill", fill);
-  arc.setAttributeNS(null, "stroke-linecap", strokeCap);
-  svgContainer.appendChild(arc);
-
-  return arc;
-}
-
-// #endef END mkSvgArc
-
-// #ef generatePalindromeTimeContainers
-// generatePalindromeTimeContainers({ numContainersOneWay: 4,startCont_minMax: [90, 110],pctChg_minMax: [-0.25, -0.31] })
-
-let generatePalindromeTimeContainers = function({
-
-  numContainersOneWay = 4,
-  startCont_minMax = [90, 110],
-  pctChg_minMax = [-0.25, -0.31]
-} = {
-  numContainersOneWay: 4,
-  startCont_minMax: [90, 110],
-  pctChg_minMax: [-0.25, -0.31]
-}) {
-
-  let timeContainers = [];
-  let firstTimeContDur = rrand(startCont_minMax[0], startCont_minMax[1]);
-  timeContainers.push(firstTimeContDur);
-
-  for (let contIx = 1; contIx < numContainersOneWay; contIx++) { //make first half of palindrome
-
-    let tPctChg = 1 + rrand(pctChg_minMax[0], pctChg_minMax[1]);
-    let previousTime = timeContainers[contIx - 1];
-    let newTime = previousTime * tPctChg;
-    timeContainers.push(newTime);
-
-  }
-
-  for (let contIx = timeContainers.length - 2; contIx >= 0; contIx--) { //mirror
-    timeContainers.push(timeContainers[contIx]);
-  }
-
-  return timeContainers;
-
-}
-
-// #endef END generatePalindromeTimeContainers
-
-/*
-
-//#ef Make Panel
-
-//##ef makePanelContentDiv
-//Make a div to use in jspanel
-let makePanelContentDiv = function({
-  w = 200,
-  h = 200,
-  top = 0,
-  left = 0,
-  clr = 'black'
-} = {
-  w: 200,
-  h: 200,
-  clr: 'black',
-  top: 0,
-  left: 0
-}) {
-  let t_div = document.createElement("div");
-  t_div.style.width = w.toString() + "px";
-  t_div.style.height = h.toString() + "px";
-  t_div.style.backgroundColor = clr;
-  t_div.style.position = 'absolute';
-  t_div.style.top = top.toString() + 'px';
-  t_div.style.left = left.toString() + 'px';
-  t_div.style.borderWidth = '0px';
-  t_div.style.padding = '0px';
-  t_div.style.margin = '0px';
-  return t_div;
-}
-//##endef makePanelContentDiv
-
-let mkPanel = function({
-  canvasType = 0,
-  w = 200,
-  h = 200,
-  title = 'panel',
-  ipos = 'center-top',
-  offsetX = '0px',
-  offsetY = '0px',
-  autopos = 'none',
-  headerSize = 'xs',
-  onwindowresize = false,
-  contentOverflow = 'hidden',
-  clr = 'black',
-  onsmallified = function() {},
-  onunsmallified = function() {},
-  canresize = false,
-  header = 'auto-show-hide'
-} = {
-  canvasType: 0, // 0=div;1=svg
-  w: 200,
-  h: 200,
-  title: 'panel',
-  ipos: 'center-top',
-  offsetX: '0px',
-  offsetY: '0px',
-  autopos: 'none',
-  headerSize: 'xs',
-  onwindowresize: false,
-  contentOverflow: 'hidden',
-  clr: 'black',
-  onsmallified: function() {},
-  onunsmallified: function() {},
-  canresize: false,
-  header: 'auto-show-hide'
-}) {
-
-  let panelForReturn;
-  let canvas = makePanelContentDiv({
-    w: w,
-    h: h,
-    clr: clr
-  });
-
-  jsPanel.create({
-    position: {
-      my: ipos, //string from jspanel eg 'center-top'
-      at: ipos,
-      offsetX: offsetX,
-      offsetY: offsetY,
-      autoposition: autopos
-    },
-    contentSize: w.toString() + " " + h.toString(),
-    header: header,
-    headerControls: {
-      size: headerSize,
-      minimize: 'remove',
-      maximize: 'remove',
-      close: 'remove'
-    },
-    contentOverflow: contentOverflow,
-    headerTitle: title,
-    theme: "light",
-    content: canvas, //svg canvas lives here
-    resizeit: {
-      aspectRatio: 'content',
-      resize: function(panel, paneldata, e) {}
-    },
-    onwindowresize: onwindowresize,
-    onsmallified: onsmallified,
-    onunsmallified: onunsmallified,
-    resizeit: {
-      disable: !canresize
-    },
-    callback: function() {
-      panelForReturn = this;
-    }
-  });
-  return panelForReturn;
-} //jsPanel.create
-
-//#endef mkPanel
-
 // #ef mkDivCanvas
 let mkDivCanvas = function({
   w = 200,
@@ -764,9 +44,6 @@ let mkDivCanvas = function({
   t_div.style.position = 'absolute';
   t_div.style.top = top.toString() + 'px';
   t_div.style.left = left.toString() + 'px';
-  t_div.style.borderWidth = '0px';
-  t_div.style.padding = '0px';
-  t_div.style.margin = '0px';
   return t_div;
 }
 // #endef END MAKE CANVAS DIV
@@ -919,7 +196,6 @@ let mkSpan = function({
 // #endef END mkSpan
 
 // #ef mkDiv
-//  mkDiv({canvas, w: 50, h: 20, top: 0, left: 0 ,bgClr: clr_limeGreen});
 let mkDiv = function({
   canvas,
   w = 50,
@@ -942,16 +218,12 @@ let mkDiv = function({
   tDiv.style.top = top.toString() + 'px';
   tDiv.style.left = left.toString() + 'px';
   tDiv.style.backgroundColor = bgClr;
-  tDiv.style.borderWidth = '0px';
-  tDiv.style.padding = '0px';
-  tDiv.style.margin = '0px';
   canvas.appendChild(tDiv);
   return tDiv;
 }
 // #endef END mkDiv
 
 // #ef mkSVGcontainer
-//  mkSVGcontainer( {canvas,w: 200,h: 200,x: 50,y: 50})
 let mkSVGcontainer = function({
   canvas,
   w = 200,
@@ -1078,70 +350,6 @@ let mkCheckboxesHoriz = function({
   return cbArray;
 }
 // #endef END mkCheckBoxesHoriz
-
-// #ef mkCheckboxesVert
-let mkCheckboxesVert = function({
-  canvas,
-  numBoxes = 3,
-  boxSz = 18,
-  gap = 7,
-  top = 0,
-  left = 0,
-  lblArray = ['0', '1', '2', '3'],
-  lblClr = 'rgb(153,255,0)',
-  lblFontSz = 18
-} = {
-  canvas,
-  numBoxes: 3,
-  boxSz: 18,
-  gap: 7,
-  top: 0,
-  left: 0,
-  lblArray: ['0', '1', '2', '3'],
-  lblClr: 'rgb(153,255,0)',
-  lblFontSz: 18
-}) {
-  let cbArray = [];
-  // Make Checkboxes
-  for (let cbix = 0; cbix < numBoxes; cbix++) {
-    let cbDict = {};
-    var cb = document.createElement("input");
-    cb.type = 'checkbox';
-    cb.value = '0';
-    cb.style.width = boxSz.toString() + 'px';
-    cb.style.height = boxSz.toString() + 'px';
-    cb.style.position = 'absolute';
-    let boxT = top + (gap * cbix) + (boxSz * cbix);
-    cb.style.top = boxT.toString() + 'px';
-    cb.style.left = left.toString() + 'px';
-    cb.style.padding = '0px';
-    cb.style.margin = '0px';
-    cb.style.borderWidth = '0px';
-    canvas.appendChild(cb);
-    cbDict['cb'] = cb;
-
-
-    // Make Labels
-    let lLeft = left + boxSz + 5;
-    let cbLbl = mkSpan({
-      canvas: canvas,
-      top: top,
-      left: lLeft,
-      text: lblArray[cbix],
-      fontSize: lblFontSz,
-      color: 'rgb(153,255,0)'
-    });
-    let lblH = cbLbl.getBoundingClientRect().height;
-    let cbH = cb.getBoundingClientRect().height;
-    let half_LabelCbHeightDifference = (lblH - cbH) / 2;
-    let lblTop = boxT - half_LabelCbHeightDifference;
-    cbLbl.style.top = lblTop.toString() + 'px';
-    cbDict['lbl'] = cbLbl;
-    cbArray.push(cbDict);
-  }
-  return cbArray;
-}
-// #endef END mkCheckboxesVert
 
 // #ef mkMenu
 function mkMenu({
@@ -1322,29 +530,29 @@ let downloadStrToHD = function(strData, strFileName, strMimeType) {
     let bb = new MSBlobBuilder();
     bb.append(strData);
     return navigator.msSaveBlob(bb, strFileName);
-  } //end if(window.MSBlobBuilder)
+  } /* end if(window.MSBlobBuilder) */
 
-if ('download' in a) { //FF20, CH19
-  a.setAttribute("download", n);
-  a.innerHTML = "downloading...";
-  D.body.appendChild(a);
+  if ('download' in a) { //FF20, CH19
+    a.setAttribute("download", n);
+    a.innerHTML = "downloading...";
+    D.body.appendChild(a);
+    setTimeout(function() {
+      let e = D.createEvent("MouseEvents");
+      e.initMouseEvent("click", true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+      a.dispatchEvent(e);
+      D.body.removeChild(a);
+    }, 66);
+    return true;
+  }; /* end if('download' in a) */
+
+  //do iframe dataURL download: (older W3)
+  let f = D.createElement("iframe");
+  D.body.appendChild(f);
+  f.src = "data:" + (A[2] ? A[2] : "application/octet-stream") + (window.btoa ? ";base64" : "") + "," + (window.btoa ? window.btoa : escape)(strData);
   setTimeout(function() {
-    let e = D.createEvent("MouseEvents");
-    e.initMouseEvent("click", true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
-    a.dispatchEvent(e);
-    D.body.removeChild(a);
-  }, 66);
+    D.body.removeChild(f);
+  }, 333);
   return true;
-}; // end if('download' in a)
-
-//do iframe dataURL download: (older W3)
-let f = D.createElement("iframe");
-D.body.appendChild(f);
-f.src = "data:" + (A[2] ? A[2] : "application/octet-stream") + (window.btoa ? ";base64" : "") + "," + (window.btoa ? window.btoa : escape)(strData);
-setTimeout(function() {
-  D.body.removeChild(f);
-}, 333);
-return true;
 }
 // #endef END downloadStrToHD
 
@@ -1831,12 +1039,13 @@ function plot(fn, range, width, height) {
 }
 
 // USAGE
-// plot( function(x){return y of x}, [xmin, xmax, ymin, ymax], crvWidth, crvHeight )
-//
-// var coords = plot( function(x) {
-//   return Math.pow(x, 2.4);
-// }, [0, 1, 0, 1], CRV_W, CRV_H);
+/*
+plot( function(x){return y of x}, [xmin, xmax, ymin, ymax], crvWidth, crvHeight )
 
+var coords = plot( function(x) {
+  return Math.pow(x, 2.4);
+}, [0, 1, 0, 1], CRV_W, CRV_H);
+*/
 
 // #endef END plot
 
@@ -2243,12 +1452,12 @@ let cycleThroughSet_palindrome = function(ogSet, numCycles) {
 //#endef Cycle Through Set Functions
 
 //#ef conditionalChoose
-let conditionalChoose = function(cSet, condition) {
+let conditionalChoose = function(cSet, condition){
 
   let setToReturn = [];
 
-  for (let i = 0; i < cSet.length; i++) {
-    if (cSet[i] == condition) {
+  for(let i=0;i<cSet.length;i++){
+    if(cSet[i]==condition){
       setToReturn.push(cSet[i]);
     }
   }
@@ -2258,14 +1467,14 @@ let conditionalChoose = function(cSet, condition) {
 //#endef conditionalChoose
 
 //#ef pad
-let pad = function(num, size) {
+let pad = function (num, size) {
   let s = "000000000" + num;
   return s.substr(s.length - size);
 }
 //#endef pad
 
 
-*/
+
 
 
 
