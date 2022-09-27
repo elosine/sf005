@@ -82,7 +82,8 @@ let mkPanel = function({
   clr = 'black',
   onsmallified = function() {},
   onunsmallified = function() {},
-  canresize = false
+  canresize = false,
+  header = 'auto-show-hide'
 } = {
   canvasType: 0, // 0=div;1=svg
   w: 200,
@@ -98,7 +99,8 @@ let mkPanel = function({
   clr: 'black',
   onsmallified: function() {},
   onunsmallified: function() {},
-  canresize: false
+  canresize: false,
+  header: 'auto-show-hide'
 }) {
   let tempPanel;
   let canvas;
@@ -128,7 +130,7 @@ let mkPanel = function({
       autoposition: autopos
     },
     contentSize: w.toString() + " " + h.toString(),
-    header: 'auto-show-hide',
+    header: header,
     headerControls: {
       size: headerSize,
       minimize: 'remove',

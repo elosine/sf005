@@ -1,5 +1,9 @@
 //#ef NOTES
 /*
+position sideshow panels
+WORK ON DIMENSIONS
+1080X720
+15 PIXEL MARGIN
 IMPORT NOTATION SVG FROM LILYPOD
 SIDESHOW PANES
 Notation Pane and Sideshow Panes
@@ -33,21 +37,26 @@ let displayClock;
 let worldPanel;
 const DEVICE_SCREEN_W = window.screen.width;
 const DEVICE_SCREEN_H = window.screen.height;
-const MAX_W = 800; //16:10 aspect ratio; 0.625
-const MAX_H = 500;
-const WORLD_W = Math.min(DEVICE_SCREEN_W, MAX_W);
-const WORLD_H = Math.min(DEVICE_SCREEN_H, MAX_H);
+console.log(DEVICE_SCREEN_W);
+const MAX_W = 1280; //16:10 aspect ratio; 0.625
+const MAX_H = 720;
+const WORLD_MARGIN = 15;
+const WORLD_W = Math.min(DEVICE_SCREEN_W, MAX_W)-(WORLD_MARGIN*2);
+const WORLD_H = Math.min(DEVICE_SCREEN_H, MAX_H)-45;
 const WORLD_CENTER = WORLD_W / 2;
-const WORLD_MARGIN = 4;
+const GAP = 6;
 const WORLD_W_FRAMES = WORLD_W / PX_PER_FRAME;
 //##endef World Panel Variables
 
 //##ef Canvas Variables
 let canvasNotationDiv, canvasNotationSVG;
+const NUMSIDESHOW = 4;
+let sideShowDivs = [];
+let sideShowSVGs = [];
 let canvasSideShow01_div, canvasSideShow02_div, canvasSideShow03_div, canvasSideShow04_div;
 let canvasSideShow01_SVG, canvasSideShow02_SVG, canvasSideShow03_SVG, canvasSideShow04_SVG;
 const SIDESHOWCANVAS_H = (WORLD_H * 0.333) - 6;
-const SIDESHOWCANVAS_W = 196;
+const SIDESHOWCANVAS_W = (WORLD_W - (WORLD_MARGIN*5) ) /4;
 const SIDESHOWCANVAS_TOP = 3;
 const NOTATIONCANVAS_TOP = WORLD_H * 0.333; // 800 x 333
 const NOTATIONCANVAS_H = WORLD_H * 0.667;
@@ -65,8 +74,8 @@ let staffNotationSVG;
 function init() {
 
   makeWorldPanel();
-  makeCanvas();
-  makeStaffNotation();
+//  makeCanvas();
+  // makeStaffNotation();
 
 } // function init() END
 //#endef INIT
@@ -80,7 +89,8 @@ function makeWorldPanel() {
     h: WORLD_H,
     title: 'SoundFlow #5',
     onwindowresize: true,
-    clr: 'none'
+    clr: 'none',
+    ipos: 'center-top',
   });
 
   worldPanel.content.addEventListener('click', function() {
