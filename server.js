@@ -20,11 +20,11 @@ app.get('/', function(req, res) {
   res.sendFile(path.join(__dirname, '/public/pieces/sf005/sf005.html'));
 });
 //#endef END SERVER STATIC FILES
-/*
+
 //#ef TIMESYNC SERVER
 app.use('/timesync', timesyncServer.requestHandler);
 //#endef END TIMESYNC SERVER
-
+/*
 //#ef SOCKET IO
 let serverSidePieceData = []; // <<serverSidePieceData>>[{pieceId:,startTime_epochTime_MS:,pieceClockAdjustment:,pauseState:,timePaused:}]
 io.on('connection', function(socket) {
