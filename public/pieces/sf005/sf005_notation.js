@@ -1,15 +1,7 @@
 //#ef NOTES
 /*
-position sideshow panels
-WORK ON DIMENSIONS
-1080X720
-15 PIXEL MARGIN
-IMPORT NOTATION SVG FROM LILYPOD
-SIDESHOW PANES
-Notation Pane and Sideshow Panes
-Refine notation
-Determine size of lilypond page to fit notation pane
-Measure distance between notes to assure proportionality
+make and position staves
+
 */
 //#endef NOTES
 
@@ -37,36 +29,31 @@ let displayClock;
 let worldPanel;
 const DEVICE_SCREEN_W = window.screen.width;
 const DEVICE_SCREEN_H = window.screen.height;
-console.log(DEVICE_SCREEN_W);
+// console.log(DEVICE_SCREEN_W);
 const MAX_W = 1280; //16:10 aspect ratio; 0.625
 const MAX_H = 720;
 const WORLD_MARGIN = 15;
-const WORLD_W = Math.min(DEVICE_SCREEN_W, MAX_W)-(WORLD_MARGIN*2);
-const WORLD_H = Math.min(DEVICE_SCREEN_H, MAX_H)-45;
+const WORLD_W = Math.min(DEVICE_SCREEN_W, MAX_W) - (WORLD_MARGIN * 2);
+const WORLD_H = Math.min(DEVICE_SCREEN_H, MAX_H) - 45;
 const WORLD_CENTER = WORLD_W / 2;
 const GAP = 6;
 const WORLD_W_FRAMES = WORLD_W / PX_PER_FRAME;
 //##endef World Panel Variables
 
 //##ef Canvas Variables
-let canvasNotationDiv, canvasNotationSVG;
-const NUMSIDESHOW = 4;
-let sideShowDivs = [];
-let sideShowSVGs = [];
-let canvasSideShow01_div, canvasSideShow02_div, canvasSideShow03_div, canvasSideShow04_div;
-let canvasSideShow01_SVG, canvasSideShow02_SVG, canvasSideShow03_SVG, canvasSideShow04_SVG;
-const SIDESHOWCANVAS_H = (WORLD_H * 0.333) - 6;
-const SIDESHOWCANVAS_W = (WORLD_W - (WORLD_MARGIN*5) ) /4;
-const SIDESHOWCANVAS_TOP = 3;
-const NOTATIONCANVAS_TOP = WORLD_H * 0.333; // 800 x 333
-const NOTATIONCANVAS_H = WORLD_H * 0.667;
+let notationCanvasDiv, notationCanvasSVG;
+const NOTATIONCANVAS_TOP = 0;
+const NOTATIONCANVAS_H = WORLD_H;
 const NOTATIONCANVAS_W = WORLD_W;
 //##endef Canvas Variables
 
-//##ef Staff Notation
-let staffNotationSVG;
-//##endef Staff Notation
-
+//##ef Staves Variables
+const NUMSTAVES = 4;
+const STAFFGAP = 4;
+const STAFF_H = (NOTATIONCANVAS_H - (STAFFGAP*(NUMSTAVES-1))) / NUMSTAVES;
+const STAFF_W = NOTATIONCANVAS_W;
+let stavesRects = [];
+//##endef Staves Variables
 
 //#endef GLOBAL VARIABLES
 
@@ -74,8 +61,8 @@ let staffNotationSVG;
 function init() {
 
   makeWorldPanel();
-//  makeCanvas();
-  // makeStaffNotation();
+  makeCanvas();
+  makeStaves();
 
 } // function init() END
 //#endef INIT
@@ -105,8 +92,7 @@ function makeWorldPanel() {
 //##ef Make Canvas
 function makeCanvas() {
 
-  //###ef Notation Canvas
-  canvasNotationDiv = mkDiv({
+  notationCanvasDiv = mkDiv({
     canvas: worldPanel.content,
     w: NOTATIONCANVAS_W,
     h: NOTATIONCANVAS_H,
@@ -115,111 +101,43 @@ function makeCanvas() {
     bgClr: 'white'
   });
 
-  canvasNotationSVG = mkSVGcontainer({
-    canvas: canvasNotationDiv,
+  notationCanvasSVG = mkSVGcontainer({
+    canvas: notationCanvasDiv,
     w: NOTATIONCANVAS_W,
     h: NOTATIONCANVAS_H,
     x: 0,
     y: 0,
     clr: 'white'
   });
-  //###endef Notation Canvas
 
-  //###ef Sideshow Canvas 01
-  canvasSideShow01_div = mkDiv({
-    canvas: worldPanel.content,
-    w: SIDESHOWCANVAS_W,
-    h: SIDESHOWCANVAS_H,
-    top: SIDESHOWCANVAS_TOP,
-    left: 3,
-    bgClr: 'black'
-  });
-
-  canvasSideShow01_SVG = mkSVGcontainer({
-    canvas: canvasSideShow01_div,
-    w: SIDESHOWCANVAS_W,
-    h: SIDESHOWCANVAS_H,
-    x: 0,
-    y: 0,
-    clr: 'black'
-  });
-  //###endef Sideshow Canvas 01
-
-  //###ef Sideshow Canvas 02
-  canvasSideShow02_div = mkDiv({
-    canvas: worldPanel.content,
-    w: SIDESHOWCANVAS_W,
-    h: SIDESHOWCANVAS_H,
-    top: SIDESHOWCANVAS_TOP,
-    left: SIDESHOWCANVAS_W + 6,
-    bgClr: 'black'
-  });
-
-  canvasSideShow02_SVG = mkSVGcontainer({
-    canvas: canvasSideShow02_div,
-    w: SIDESHOWCANVAS_W,
-    h: SIDESHOWCANVAS_H,
-    x: 0,
-    y: 0,
-    clr: 'black'
-  });
-  //###endef Sideshow Canvas 02
-
-  //###ef Sideshow Canvas 03
-  canvasSideShow03_div = mkDiv({
-    canvas: worldPanel.content,
-    w: SIDESHOWCANVAS_W,
-    h: SIDESHOWCANVAS_H,
-    top: SIDESHOWCANVAS_TOP,
-    left: (SIDESHOWCANVAS_W * 2) + 9,
-    bgClr: 'black'
-  });
-
-  canvasSideShow03_SVG = mkSVGcontainer({
-    canvas: canvasSideShow03_div,
-    w: SIDESHOWCANVAS_W,
-    h: SIDESHOWCANVAS_H,
-    x: 0,
-    y: 0,
-    clr: 'black'
-  });
-  //###endef Sideshow Canvas 03
-
-  //###ef Sideshow Canvas 04
-  canvasSideShow04_div = mkDiv({
-    canvas: worldPanel.content,
-    w: SIDESHOWCANVAS_W,
-    h: SIDESHOWCANVAS_H,
-    top: SIDESHOWCANVAS_TOP,
-    left: (SIDESHOWCANVAS_W * 3) + 12,
-    bgClr: 'black'
-  });
-
-  canvasSideShow04_SVG = mkSVGcontainer({
-    canvas: canvasSideShow04_div,
-    w: SIDESHOWCANVAS_W,
-    h: SIDESHOWCANVAS_H,
-    x: 0,
-    y: 0,
-    clr: 'black'
-  });
-  //###endef Sideshow Canvas 04
 } // function makeCanvas() END
 //##endef Make Canvas
 
-//##ef Make Staff Notation
-function makeStaffNotation() {
+//##ef Make Staves
+function makeStaves() {
 
-  let staffNotationSVG = document.createElementNS(SVG_NS, "image");
-  staffNotationSVG.setAttributeNS(XLINK_NS, 'xlink:href', '/pieces/sf005/notation/InteractiveLoopingLine001-1.svg');
-  staffNotationSVG.setAttributeNS(null, "y", 0);
-  staffNotationSVG.setAttributeNS(null, "x", 0);
-  staffNotationSVG.setAttributeNS(null, "visibility", 'visible');
-  staffNotationSVG.setAttributeNS(null, "display", 'yes');
-  canvasNotationSVG.appendChild(staffNotationSVG);
+  for (var i = 0; i < NUMSTAVES; i++) {
+    let ty=i*(STAFF_H+STAFFGAP);
+    let tStaffRect = mkSvgRect({
+      svgContainer:notationCanvasSVG,
+      x: 0,
+      y: ty,
+      w: STAFF_W,
+      h: STAFF_H,
+      fill: 'black',
+      stroke: 'black',
+      strokeW: 0,
+      roundR: 0
+    });
 
-} // makeStaffNotation() END
-//##endef Make Staff Notation
+    stavesRects.push(tStaffRect);
+
+  }
+
+} // function makeStaves() END
+//##endef Make Staves
+
+
 
 //#endef BUILD WORLD
 
