@@ -1,14 +1,29 @@
 //#ef NOTES
 /*
+each staff as own svgcontainer
+
+ANIMATE CURSOR
+px per ms
+
+Print Epoch Time
+Draw Scrolling cursors
+Position Scrolling Cursors
 Implement Animation Engine
 */
 //#endef NOTES
 
 //#ef GLOBAL VARIABLES
 
-//##ef Timing
+
+//#ef General Variables
+let NUM_PLAYERS = 4;
+const TEMPO_COLORS = [clr_brightOrange, clr_brightGreen, clr_brightBlue, clr_lavander, clr_darkRed2];
+//#endef General Variables
+
+//#ef Timing
 const FRAMERATE = 60;
 let FRAMECOUNT = 0;
+let LASTFRAMECOUNT = 0;
 const PX_PER_SEC = 50;
 const PX_PER_HALFSEC = PX_PER_SEC / 2;
 const PX_PER_FRAME = PX_PER_SEC / FRAMERATE;
@@ -17,17 +32,16 @@ const LEAD_IN_TIME_SEC = 2;
 const LEAD_IN_TIME_MS = LEAD_IN_TIME_SEC * 1000;
 const LEAD_IN_FRAMES = LEAD_IN_TIME_SEC * FRAMERATE;
 let startTime_epochTime_MS = 0;
-
 let pauseState = 0;
 let timePaused = 0;
 let pieceClockAdjustment = 0;
 let displayClock;
-//##endef Timing
+//#endef Timing
 
 //#ef Animation Engine Variables
 let cumulativeChangeBtwnFrames_MS = 0;
 let epochTimeOfLastFrame_MS;
-let animationEngineCanRun = false;
+let animationEngineCanRun = true;
 //#endef END Animation Engine Variables
 
 //#ef TIMESYNC
@@ -37,7 +51,7 @@ const TS = timesync.create({
 });
 //#endef TIMESYNC
 
-//##ef World Panel Variables
+//#ef World Panel Variables
 let worldPanel;
 const DEVICE_SCREEN_W = window.screen.width;
 const DEVICE_SCREEN_H = window.screen.height;
@@ -50,33 +64,28 @@ const WORLD_H = Math.min(DEVICE_SCREEN_H, MAX_H) - 45;
 const WORLD_CENTER = WORLD_W / 2;
 const GAP = 6;
 const WORLD_W_FRAMES = WORLD_W / PX_PER_FRAME;
-//##endef World Panel Variables
+//#endef World Panel Variables
 
-//##ef Canvas Variables
-let notationCanvasDiv, notationCanvasSVG;
+//#ef Canvas Variables
 const NOTATIONCANVAS_TOP = 0;
 const NOTATIONCANVAS_H = WORLD_H;
 const NOTATIONCANVAS_W = WORLD_W;
-//##endef Canvas Variables
+//#endef Canvas Variables
 
-//##ef Staves Variables
+//#ef Staves Variables
 const NUMSTAVES = 4;
 const STAFFGAP = 4;
-const STAFF_H = (NOTATIONCANVAS_H - (STAFFGAP*(NUMSTAVES-1))) / NUMSTAVES;
+const STAFF_H = (NOTATIONCANVAS_H - (STAFFGAP * (NUMSTAVES - 1))) / NUMSTAVES;
 const STAFF_W = NOTATIONCANVAS_W;
-let stavesRects = [];
-//##endef Staves Variables
+let staves = [];
+//#endef Staves Variables
 
+//#ef Scrolling Tempo Cursors
+let tempoCursors = [];
+const NOTATION_CURSOR_H = 50;
+const NOTATION_CURSOR_STROKE_W = 3;
+//#endef Scrolling Tempo Cursors
 
-//##ef Cursor Variables
-let cursorLine, cursorRectFront, cursorRectBack;
-const CURSOR_RECT_W = 40;
-const CURSOR_X = Math.round(WORLD_W / 4);
-const NUM_PX_WORLD_R_TO_CURSOR = WORLD_W - CURSOR_X;
-const NUM_FRAMES_WORLD_R_TO_CURSOR = Math.round(NUM_PX_WORLD_R_TO_CURSOR / PX_PER_FRAME);
-const NUM_FRAMES_WORLD_CURSOR_TO_WORLD_L = Math.round(CURSOR_X / PX_PER_FRAME);
-const CURSOR_BACK_CENTER_X = CURSOR_X - (CURSOR_RECT_W / 2);
-//##endef Cursor Variables
 
 //#endef GLOBAL VARIABLES
 
@@ -84,13 +93,15 @@ const CURSOR_BACK_CENTER_X = CURSOR_X - (CURSOR_RECT_W / 2);
 function init() {
 
   makeWorldPanel();
-  makeCanvas();
   makeStaves();
+  makeScrollingTempoCursors();
 
   let ts_Date = new Date(TS.now());
   let t_startTime_epoch = ts_Date.getTime();
   startTime_epochTime_MS = t_startTime_epoch;
   epochTimeOfLastFrame_MS = t_startTime_epoch;
+  console.log(startTime_epochTime_MS);
+  // console.log(startTime_epochTime_MS%500);
 
   requestAnimationFrame(animationEngine); //kick off animation
 
@@ -99,7 +110,8 @@ function init() {
 
 //#ef BUILD WORLD
 
-//##ef Make World Panel
+
+//#ef Make World Panel - floating window made in jspanel
 function makeWorldPanel() {
   worldPanel = mkPanel({
     w: WORLD_W,
@@ -117,41 +129,41 @@ function makeWorldPanel() {
   });
 
 } // function makeWorldPanel() END
-//##endef Make World Panel
+//#endef Make World Panel
 
-//##ef Make Canvas
-function makeCanvas() {
-
-  notationCanvasDiv = mkDiv({
-    canvas: worldPanel.content,
-    w: NOTATIONCANVAS_W,
-    h: NOTATIONCANVAS_H,
-    top: NOTATIONCANVAS_TOP,
-    left: 0,
-    bgClr: 'white'
-  });
-
-  notationCanvasSVG = mkSVGcontainer({
-    canvas: notationCanvasDiv,
-    w: NOTATIONCANVAS_W,
-    h: NOTATIONCANVAS_H,
-    x: 0,
-    y: 0,
-    clr: 'white'
-  });
-
-} // function makeCanvas() END
-//##endef Make Canvas
-
-//##ef Make Staves
+//#ef Make Staves - SVG rectangle for each individual staff (draw notation on top)
 function makeStaves() {
 
   for (var i = 0; i < NUMSTAVES; i++) {
-    let ty=i*(STAFF_H+STAFFGAP);
-    let tStaffRect = mkSvgRect({
-      svgContainer:notationCanvasSVG,
+    let tStaffObj = {}; //{div:,svg:,rect:}
+    let ty = i * (STAFF_H + STAFFGAP);
+
+  let tDiv = mkDiv({
+      canvas: worldPanel.content,
+      w: STAFF_W,
+      h: STAFF_H,
+      top: ty,
+      left: 0,
+      bgClr: clr_blueGrey
+    });
+
+    tStaffObj['div'] = tDiv;
+
+  let tSvg = mkSVGcontainer({
+      canvas: tDiv,
+      w: STAFF_W,
+      h: STAFF_H,
       x: 0,
-      y: ty,
+      y: 0,
+      clr: clr_blueGrey
+    });
+
+    tStaffObj['svg'] = tSvg;
+
+    tStaffObj['rect'] = mkSvgRect({
+      svgContainer: tSvg,
+      x: 0,
+      y: 0,
       w: STAFF_W,
       h: STAFF_H,
       fill: 'black',
@@ -160,98 +172,51 @@ function makeStaves() {
       roundR: 0
     });
 
-    stavesRects.push(tStaffRect);
+    staves.push(tStaffObj);
 
-  }
+  } // for (var i = 0; i < NUMSTAVES; i++) END
 
 } // function makeStaves() END
-//##endef Make Staves
+//#endef Make Staves
 
+//#ef Make Scrolling Tempo Cursors
+function makeScrollingTempoCursors() {
 
-//##ef Make Cursor
-function makeCursor() {
+  for (let tempoCsrIx = 0; tempoCsrIx < NUM_PLAYERS; tempoCsrIx++) {
 
-  cursorRectFront = mkSvgRect({
-    svgContainer: canvas,
-    x: CURSOR_X,
-    y: 1,
-    w: CURSOR_RECT_W,
-    h: WORLD_H - 2,
-    fill: 'none',
-    stroke: 'white',
-    strokeW: 2,
-    roundR: 0
-  });
+    let tLine = mkSvgLine({
+      svgContainer: staves[tempoCsrIx].svg,
+      x1: 0,
+      y1: STAFF_H,
+      x2: 0,
+      y2: 0,
+      stroke: TEMPO_COLORS[tempoCsrIx],
+      strokeW: NOTATION_CURSOR_STROKE_W
+    });
+    tLine.setAttributeNS(null, 'stroke-linecap', 'round');
+    tLine.setAttributeNS(null, 'display', 'none');
+    // tLine.setAttributeNS(null, 'transform', "translate(" + beatCoords[4].x.toString() + "," + beatCoords[4].y.toString() + ")");
+    tempoCursors.push(tLine);
 
-  cursorRectBack = mkSvgRect({
-    svgContainer: canvas,
-    x: CURSOR_X - CURSOR_RECT_W,
-    y: 1,
-    w: CURSOR_RECT_W,
-    h: WORLD_H - 2,
-    fill: 'black',
-    stroke: 'white',
-    strokeW: 2,
-    roundR: 0
-  });
+  } //for (let tempoCsrIx = 0; tempoCsrIx < NUM_TEMPOS; tempoCsrIx++) END
+  tempoCursors[0].setAttributeNS(null, 'display', 'yes');
+  //MOVE SVG: "SVG".setAttributeNS(null, 'transform', 'translate(x,y)')
+  tempoCursors[0].setAttributeNS(null, 'transform', 'translate( 50,0)');
+} // function makeScrollingTempoCursors() END
+//#endef Make Scrolling Tempo Cursors
 
-  cursorLine = mkSvgLine({
-    svgContainer: canvas,
-    x1: CURSOR_X,
-    y1: 0,
-    x2: CURSOR_X,
-    y2: WORLD_W,
-    stroke: 'yellow',
-    strokeW: 4
-  });
-
-
-} // function makeCursor() END
-//##endef Make Cursor
 
 //#endef BUILD WORLD
 
 //#ef WIPE/UPDATE/DRAW
 
 
-//##ef Scrolling Cursors WIPE/UPDATE/DRAW
-
-//###ef wipeTempoCsrs
-function wipeTempoCsrs() {
-  tempoCursors.forEach((tempoCsr) => {
-    tempoCsr.setAttributeNS(null, 'display', 'none');
-  });
-}
-//###endef END wipeTempoCsrs
-
-//###ef updateScrollingCsrs
-function updateScrollingCsrs() {
-  if (FRAMECOUNT > 0) { //No lead in motion for scrolling cursors
-    scoreData.scrollingCsrCoords_perTempo.forEach((posObjSet, tempoIx) => { // Loop: set of goFrames
-
-      let setIx = FRAMECOUNT % posObjSet.length; //adjust current FRAMECOUNT to account for lead-in and loop this tempo's set of goFrames
-
-      let tX = posObjSet[setIx].x;
-      let tY1 = posObjSet[setIx].y1;
-      let tY2 = posObjSet[setIx].y2;
-      tempoCursors[tempoIx].setAttributeNS(null, 'x1', tX);
-      tempoCursors[tempoIx].setAttributeNS(null, 'x2', tX);
-      tempoCursors[tempoIx].setAttributeNS(null, 'y1', tY1);
-      tempoCursors[tempoIx].setAttributeNS(null, 'y2', tY2);
-      tempoCursors[tempoIx].setAttributeNS(null, 'display', 'yes');
-
-    }); //goFrameCycles_perTempo.forEach((bbYposSet, tempoIx) => END
-  } // if (FRAMECOUNT > LEAD_IN_FRAMES) END
-} // function updateScrollingCsrs() END
-//###endef updateScrollingCsrs
-
-//##endef Scrolling Cursors WIPE/UPDATE/DRAW
 
 //#endef WIPE/UPDATE/DRAW
 
 //#ef ANIMATION
 
-//##ef Animation Engine
+//#ef Animation Engine
 function animationEngine(timestamp) { //timestamp not used; timeSync server library used instead
 
   let ts_Date = new Date(TS.now()); //Date stamp object from TimeSync library
@@ -263,9 +228,12 @@ function animationEngine(timestamp) { //timestamp not used; timeSync server libr
 
     if (cumulativeChangeBtwnFrames_MS > (MS_PER_FRAME * FRAMERATE)) cumulativeChangeBtwnFrames_MS = MS_PER_FRAME; //escape hatch if more than 1 second of frames has passed then just skip to next update according to clock
 
-    wipe();
-    update();
-    draw();
+    wipe(tsNowEpochTime_MS);
+    update(tsNowEpochTime_MS);
+    draw(tsNowEpochTime_MS);
+
+    LASTFRAMECOUNT = FRAMECOUNT;
+    FRAMECOUNT++
 
     cumulativeChangeBtwnFrames_MS -= MS_PER_FRAME; //subtract from cumulativeChangeBtwnFrames_MS 1 frame worth of MS until while cond is satisified
 
@@ -274,31 +242,27 @@ function animationEngine(timestamp) { //timestamp not used; timeSync server libr
   if (animationEngineCanRun) requestAnimationFrame(animationEngine); //animation engine gate: animationEngineCanRun
 
 } // function animationEngine(timestamp) END
-//##endef Animation Engine END
+//#endef Animation Engine END
 
 //#ef WIPE/UPDATE/DRAW
 
+//#ef Wipe Function
+function wipe(epochClock_MS) {
 
-//##ef Wipe Function
-function wipe() {
-  wipeLiveSampPortals();
-  wipeGc1Portals();
 } // function wipe() END
-//##endef Wipe Function
+//#endef Wipe Function
 
-//##ef Update Function
-function update() {
-  updateLiveSamplingPortals();
-  updateGc1Portals();
-}
-//##endef Update Function
-
-//##ef Draw Function
-function draw() {
+//#ef Update Function
+function update(epochClock_MS) {
 
 }
-//##endef Draw Function
+//#endef Update Function
 
+//#ef Draw Function
+function draw(epochClock_MS) {
+
+}
+//#endef Draw Function
 
 //#endef WIPE/UPDATE/DRAW
 

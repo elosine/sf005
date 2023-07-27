@@ -1,4 +1,4 @@
-//#ef LIBRARIES
+// #region LIBRARIES
 var express = require('express');
 var app = express();
 var path = require('path');
@@ -6,31 +6,33 @@ var timesyncServer = require('timesync/server');
 var httpServer = require('http').createServer(app);
 io = require('socket.io').listen(httpServer);
 const fs = require('fs');
-//#endef END LIBRARIES
+// #endregion END LIBRARIES
 
-//#ef HTTP SERVER
+//#region HTTP SERVER
 const PORT = process.env.PORT || 5000
 httpServer.listen(PORT, () => console.log(`Listening on ${ PORT }`));
-//#endef END HTTP SERVER
+//#endregion END HTTP SERVER
 
-//#ef SERVE STATIC FILES THROUGH EXPRESS
+//#region SERVE STATIC FILES THROUGH EXPRESS
 app.use(express.static(path.join(__dirname, '/public')));
 app.get('/', function(req, res) {
   // res.sendFile(path.join(__dirname, '/public/pieces/sf005/sf005_launchPage.html'));
   res.sendFile(path.join(__dirname, '/public/pieces/sf005/sf005.html'));
 });
-//#endef END SERVER STATIC FILES
+//#endregion END SERVER STATIC FILES
 
-//#ef TIMESYNC SERVER
+//#region TIMESYNC SERVER
 app.use('/timesync', timesyncServer.requestHandler);
-//#endef END TIMESYNC SERVER
+//#endregion END TIMESYNC SERVER
+
+
 /*
-//#ef SOCKET IO
+//#region SOCKET IO
 let serverSidePieceData = []; // <<serverSidePieceData>>[{pieceId:,startTime_epochTime_MS:,pieceClockAdjustment:,pauseState:,timePaused:}]
 io.on('connection', function(socket) {
 
 
-  //##ef Load Piece from Server Receive and Broadcast
+  //##region Load Piece from Server Receive and Broadcast
   // Request for load piece from splash page
   socket.on('sf005_loadPieceFromServer', function(data) {
     let pieceId = data.pieceId;
@@ -53,9 +55,9 @@ io.on('connection', function(socket) {
       });
     }); // fs.readdir(directoryPath, function(err, files)
   }); //socket.on('sf005_loadPieceFromServer', function(data)
-  //##endef Load Piece from Server Receive and Broadcast
+  //##endregion Load Piece from Server Receive and Broadcast
 
-  //##ef Start Receive and Broadcast
+  //##region Start Receive and Broadcast
   socket.on('sf005_newStartTimeBroadcast_toServer', function(data) {
 
     let pieceId = data.pieceId;
@@ -109,9 +111,9 @@ io.on('connection', function(socket) {
     } //else{ //if pieceId is already on Server; Send back to create a restart button
 
   }); // socket.on('sf005_newStartTimeBroadcast_send', function(data) END
-  //##endef Start Receive and Broadcast
+  //##endregion Start Receive and Broadcast
 
-  //##ef Restart Receive and Broadcast
+  //##region Restart Receive and Broadcast
   socket.on('sf005_restart', function(data) {
 
     let pieceId = data.pieceId;
@@ -147,9 +149,9 @@ io.on('connection', function(socket) {
     });
 
   }); // socket.on('sf005_restart' END
-  //##endef Restart Receive and Broadcast
+  //##endregion Restart Receive and Broadcast
 
-  //##ef Pause Broadcast
+  //##region Pause Broadcast
   socket.on('sf005_pause', function(data) {
     let pieceId = data.pieceId;
     let thisPress_pauseState = data.thisPress_pauseState;
@@ -181,9 +183,9 @@ io.on('connection', function(socket) {
     });
 
   }); // socket.on('sf005_pause', function(data) END
-  //##endef Pause Broadcast
+  //##endregion Pause Broadcast
 
-  //##ef Stop Broadcast
+  //##region Stop Broadcast
   socket.on('sf005_stop', function(data) {
     let pieceId = data.pieceId;
 
@@ -201,9 +203,9 @@ io.on('connection', function(socket) {
     });
 
   }); // socket.on('sf005_stop', function(data) END
-  //##endef Stop Broadcast
+  //##endregion Stop Broadcast
 
-  //##ef Goto Broadcast
+  //##region Goto Broadcast
   socket.on('sf005_goto', function(data) {
 
     let pieceId = data.pieceId;
@@ -228,9 +230,9 @@ io.on('connection', function(socket) {
     });
 
   }); // socket.on('sf005_goto' END
-  //##endef Goto Broadcast
+  //##endregion Goto Broadcast
 
-  //##ef Join Broadcast
+  //##region Join Broadcast
   socket.on('sf005_join', function(data) {
 
     let pieceId = data.pieceId;
@@ -272,9 +274,9 @@ io.on('connection', function(socket) {
     } // if (canBroadcastJoin)
 
   }); // socket.on('sf005_join' END
-  //##endef Join Broadcast
+  //##endregion Join Broadcast
 
 
 }); // End Socket IO
-//#endef >> END SOCKET IO
+//#endregion >> END SOCKET IO
 */
